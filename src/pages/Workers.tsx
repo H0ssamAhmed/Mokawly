@@ -4,56 +4,54 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { api } from '../../convex/_generated/api';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Plus, Edit, Trash, User } from "lucide-react";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
+import { useMutation } from "convex/react";
+import { WorkerType } from "@/types/SharedTypes";
+import ReqiureInputSgin from "@/components/ReqiureInputSgin";
 
-interface Worker {
-  id: string;
-  name: string;
-  dailyWage: number;
-  type: "عامل" | "حرفي";
-  phone?: string;
-  isPublished: boolean;
-}
+
 
 export default function Workers() {
-  const [workers, setWorkers] = useState<Worker[]>([
+  const addWorker = useMutation(api.worker.addWorker);
+  const [workers, setWorkers] = useState<WorkerType[]>([
     {
-      id: "1",
+      _id: "1",
       name: "أحمد محمد",
       dailyWage: 300,
-      type: "حرفي",
-      phone: "+966501234567",
+      type: "صنايعي",
+      phone: 966501234567,
       isPublished: true,
     },
     {
-      id: "2",
+      _id: "2",
       name: "محمد علي",
       dailyWage: 250,
       type: "عامل",
-      phone: "+966507654321",
+      phone: 966507654321,
       isPublished: false,
     },
     {
-      id: "3",
+      _id: "3",
       name: "خالد سعد",
       dailyWage: 280,
-      type: "حرفي",
+      type: "صنايعي",
       isPublished: true,
     },
   ]);
-
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [editingWorker, setEditingWorker] = useState<Worker | null>(null);
+  const [isloading, setIsloading] = useState<boolean>(false)
+  const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
+  const [editingWorker, setEditingWorker] = useState<WorkerType | null>(null);
   const [formData, setFormData] = useState({
     name: "",
     dailyWage: "",
-    type: "عامل" as "عامل" | "حرفي",
-    phone: "",
+    type: "عامل" as "عامل" | "صنايعي",
+    phone: null,
     isPublished: false,
   });
 
@@ -70,66 +68,77 @@ export default function Workers() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
+
+
     if (!formData.name || !formData.dailyWage) {
-      toast({
-        title: "خطأ",
-        description: "الاسم والأجر اليومي مطلوبان",
-        variant: "destructive",
-      });
+      console.log("error");
       return;
     }
 
-    const workerData: Worker = {
-      id: editingWorker?.id || Date.now().toString(),
+    const workerData: WorkerType = {
       name: formData.name,
-      dailyWage: parseFloat(formData.dailyWage),
+      dailyWage: +(formData.dailyWage),
       type: formData.type,
-      phone: formData.phone || undefined,
+      phone: formData.phone || null,
       isPublished: formData.isPublished,
     };
+    console.log(workerData);
+    // try {
 
-    if (editingWorker) {
-      setWorkers(workers.map(w => w.id === editingWorker.id ? workerData : w));
-      toast({
-        title: "نجح",
-        description: "تم تحديث العامل بنجاح",
-      });
-    } else {
-      setWorkers([...workers, workerData]);
-      toast({
-        title: "نجح",
-        description: "تم إضافة العامل بنجاح",
-      });
-    }
+    // } catch (error) {
 
-    setIsDialogOpen(false);
-    resetForm();
+    // }
+    addWorker(workerData).then((res) => {
+      console.log(res);
+      setIsloading(true);
+    }).catch((err) => {
+      console.log(err);
+    }).finally(() => {
+      setIsloading(false);
+      // setIsDialogOpen(false);
+    })
+
+    // if (editingWorker) {
+    //   setWorkers(workers.map(w => w._id === editingWorker._id ? workerData : w));
+    //   toast({
+    //     title: "نجح",
+    //     description: "تم تحديث العامل بنجاح",
+    //   });
+    // } else {
+    //   setWorkers([...workers, workerData]);
+    //   toast({
+    //     title: "نجح",
+    //     description: "تم إضافة العامل بنجاح",
+    //   });
+    // }
+
+    // setIsDialogOpen(false);
+    // resetForm();
   };
 
-  const handleEdit = (worker: Worker) => {
+  const handleEdit = (worker: WorkerType) => {
     setEditingWorker(worker);
     setFormData({
       name: worker.name,
       dailyWage: worker.dailyWage.toString(),
       type: worker.type,
-      phone: worker.phone || "",
+      phone: worker.phone || null,
       isPublished: worker.isPublished,
     });
     setIsDialogOpen(true);
   };
 
   const handleDelete = (id: string) => {
-    setWorkers(workers.filter(w => w.id !== id));
-    toast({
-      title: "نجح",
-      description: "تم حذف العامل بنجاح",
+    setWorkers(workers.filter(w => w._id !== id));
+    toast.success("تم حذف العامل بنجاح", {
+      position: "top-center"
     });
   };
 
   const togglePublished = (id: string) => {
-    setWorkers(workers.map(w => 
-      w.id === id ? { ...w, isPublished: !w.isPublished } : w
+    setWorkers(workers.map(w =>
+      w._id === id ? { ...w, isPublished: !w.isPublished } : w
     ));
   };
 
@@ -137,23 +146,29 @@ export default function Workers() {
     <div className="p-4 lg:p-6 space-y-6" dir="rtl">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <h1 className="text-2xl lg:text-3xl font-bold">العمال</h1>
-        
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen} >
           <DialogTrigger asChild>
             <Button onClick={resetForm}>
               <Plus className="mr-2 h-4 w-4" />
               إضافة عامل
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-md">
+          <DialogContent className="max-w-md" dir="rtl">
             <DialogHeader>
-              <DialogTitle>
-                {editingWorker ? "تعديل العامل" : "إضافة عامل جديد"}
-              </DialogTitle>
+              <div className="flex items-start justify-center flex-col gap-2 p-4">
+                <DialogTitle className="text-2xl">
+                  {editingWorker ? "تعديل العامل" : "إضافة عامل جديد"}
+                </DialogTitle>
+                <DialogDescription className="text-md">
+                  العلامة  <ReqiureInputSgin />  هي مطلوبة
+
+                </DialogDescription>
+              </div>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="name">الاسم *</Label>
+                <Label htmlFor="name">الاسم <ReqiureInputSgin /></Label>
                 <Input
                   id="name"
                   value={formData.name}
@@ -162,33 +177,33 @@ export default function Workers() {
                   required
                 />
               </div>
-              
+
               <div className="space-y-2">
-                <Label htmlFor="dailyWage">الأجر اليومي *</Label>
+                <Label htmlFor="dailyWage">الأجر اليومي ( ريال ) <ReqiureInputSgin /></Label>
                 <Input
                   id="dailyWage"
                   type="number"
-                  step="0.01"
+                  step="1"
                   value={formData.dailyWage}
                   onChange={(e) => setFormData({ ...formData, dailyWage: e.target.value })}
-                  placeholder="300.00"
+                  placeholder="الأجر اليومي مثل 150"
                   required
                 />
               </div>
-              
+
               <div className="space-y-2">
-                <Label htmlFor="type">النوع</Label>
-                <Select value={formData.type} onValueChange={(value: "عامل" | "حرفي") => setFormData({ ...formData, type: value })}>
+                <Label htmlFor="type">النوع  <ReqiureInputSgin /></Label>
+                <Select value={formData.type} onValueChange={(value: "عامل" | "صنايعي") => setFormData({ ...formData, type: value })}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="عامل">عامل</SelectItem>
-                    <SelectItem value="حرفي">حرفي</SelectItem>
+                    <SelectItem value="صنايعي">صنايعي</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
-              
+
               <div className="space-y-2">
                 <Label htmlFor="phone">رقم الهاتف (اختياري)</Label>
                 <Input
@@ -199,16 +214,17 @@ export default function Workers() {
                   placeholder="+966501234567"
                 />
               </div>
-              
+
               <div className="flex items-center space-x-2 space-x-reverse">
                 <Switch
+                  dir="ltr"
                   id="isPublished"
                   checked={formData.isPublished}
                   onCheckedChange={(checked) => setFormData({ ...formData, isPublished: checked })}
                 />
                 <Label htmlFor="isPublished">السماح بالوصول لصفحة الملخص</Label>
               </div>
-              
+
               <div className="flex gap-2 pt-4">
                 <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)} className="flex-1">
                   إلغاء
@@ -224,14 +240,14 @@ export default function Workers() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {workers.map((worker) => (
-          <Card key={worker.id}>
+          <Card key={worker._id}>
             <CardHeader className="pb-3">
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-2">
                   <User className="h-5 w-5 text-muted-foreground" />
                   <CardTitle className="text-base">{worker.name}</CardTitle>
                 </div>
-                <Badge variant={worker.type === "حرفي" ? "default" : "secondary"}>
+                <Badge variant={worker.type === "صنايعي" ? "default" : "secondary"}>
                   {worker.type}
                 </Badge>
               </div>
@@ -240,25 +256,25 @@ export default function Workers() {
               <div className="text-lg font-semibold">
                 {worker.dailyWage.toLocaleString('ar-SA')} ر.س/يوم
               </div>
-              
+
               {worker.phone && (
                 <div className="text-sm text-muted-foreground">
                   📞 {worker.phone}
                 </div>
               )}
-              
+
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Switch
                     checked={worker.isPublished}
-                    onCheckedChange={() => togglePublished(worker.id)}
+                    onCheckedChange={() => togglePublished(worker._id)}
                   />
                   <span className="text-xs text-muted-foreground">
                     الملخص {worker.isPublished ? "عام" : "خاص"}
                   </span>
                 </div>
               </div>
-              
+
               <div className="flex gap-2 pt-2">
                 <Button
                   variant="outline"
@@ -272,16 +288,16 @@ export default function Workers() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => handleDelete(worker.id)}
+                  onClick={() => handleDelete(worker._id)}
                   className="text-red-600 hover:text-red-700"
                 >
                   <Trash className="h-3 w-3" />
                 </Button>
               </div>
-              
+
               {worker.isPublished && (
                 <div className="text-xs text-muted-foreground pt-1">
-                  🔗 الملخص: /worker-summary/{worker.id}
+                  🔗 الملخص: /worker-summary/{worker._id}
                 </div>
               )}
             </CardContent>
