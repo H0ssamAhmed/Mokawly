@@ -12,6 +12,13 @@ export const addWorker = mutation({
   handler: async (ctx, { name, phone, type, dailyWage, isPublished }) => {
     const workerId = await ctx.db.insert("worker", { name, phone, type, dailyWage, isPublished });
     const worker = await ctx.db.get(workerId);
-    return worker;
+    return { ok: true, worker };
+  },
+});
+
+export const getWorkers = query({
+  handler: async (ctx) => {
+    const workers = await ctx.db.query("worker").collect();
+    return { ok: true, workers };
   },
 });

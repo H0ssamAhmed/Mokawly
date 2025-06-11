@@ -22,7 +22,7 @@ const App = () => (
     <AuthProvider>
       <TooltipProvider>
 
-        <Sonner position="top-center" duration={5000} />
+        <Sonner position="top-center" duration={5000} dir="rtl" />
         <BrowserRouter>
           <Routes>
             <Route path="/login" element={<Login />} />

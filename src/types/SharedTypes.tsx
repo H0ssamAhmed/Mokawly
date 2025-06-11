@@ -1,7 +1,7 @@
 export interface WorkerType {
   _id?: string;
   name: string;
-  phone?: number | null;
+  phone?: string | null;
   type: "عامل" | "صنايعي";
   dailyWage: number;
   isPublished: boolean;

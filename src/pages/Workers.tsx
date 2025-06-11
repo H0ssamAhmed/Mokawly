@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,9 +9,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Edit, Trash, User } from "lucide-react";
+import { Plus, Edit, Trash, User, Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { useMutation } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import { WorkerType } from "@/types/SharedTypes";
 import ReqiureInputSgin from "@/components/ReqiureInputSgin";
 
@@ -19,31 +19,8 @@ import ReqiureInputSgin from "@/components/ReqiureInputSgin";
 
 export default function Workers() {
   const addWorker = useMutation(api.worker.addWorker);
-  const [workers, setWorkers] = useState<WorkerType[]>([
-    {
-      _id: "1",
-      name: "أحمد محمد",
-      dailyWage: 300,
-      type: "صنايعي",
-      phone: 966501234567,
-      isPublished: true,
-    },
-    {
-      _id: "2",
-      name: "محمد علي",
-      dailyWage: 250,
-      type: "عامل",
-      phone: 966507654321,
-      isPublished: false,
-    },
-    {
-      _id: "3",
-      name: "خالد سعد",
-      dailyWage: 280,
-      type: "صنايعي",
-      isPublished: true,
-    },
-  ]);
+  const getAllWorkers = useQuery(api.worker.getWorkers);
+  const [workers, setWorkers] = useState<WorkerType[]>([])
   const [isloading, setIsloading] = useState<boolean>(false)
   const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
   const [editingWorker, setEditingWorker] = useState<WorkerType | null>(null);
@@ -54,6 +31,11 @@ export default function Workers() {
     phone: null,
     isPublished: false,
   });
+  useEffect(() => {
+    if (getAllWorkers) {
+      setWorkers(getAllWorkers.workers)
+    }
+  }, [getAllWorkers])
 
   const resetForm = () => {
     setFormData({
@@ -83,21 +65,32 @@ export default function Workers() {
       phone: formData.phone || null,
       isPublished: formData.isPublished,
     };
-    console.log(workerData);
-    // try {
+    setIsloading(true);
+    addWorker(workerData)
+      .then((res) => {
+        console.log(res);
 
-    // } catch (error) {
+        toast.error("تم اضافة العامل بنحاح", {
+          duration: 3000,
+          icon: "✅",
+          style: {
+            color: "green"
+          }
+        });
+      }).catch((err) => {
+        toast.error("حدث خطأ", {
+          duration: 5000,
+          icon: "❌",
+          style: {
+            color: "red"
+          }
+        });
+        console.log(err);
+      }).finally(() => {
 
-    // }
-    addWorker(workerData).then((res) => {
-      console.log(res);
-      setIsloading(true);
-    }).catch((err) => {
-      console.log(err);
-    }).finally(() => {
-      setIsloading(false);
-      // setIsDialogOpen(false);
-    })
+        setIsloading(false);
+        setIsDialogOpen(false);
+      })
 
     // if (editingWorker) {
     //   setWorkers(workers.map(w => w._id === editingWorker._id ? workerData : w));
@@ -238,7 +231,7 @@ export default function Workers() {
         </Dialog>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      {!isloading && <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {workers.map((worker) => (
           <Card key={worker._id}>
             <CardHeader className="pb-3">
@@ -303,9 +296,9 @@ export default function Workers() {
             </CardContent>
           </Card>
         ))}
-      </div>
-
-      {workers.length === 0 && (
+      </div>}
+      {isloading && <Loader2 className="animate-spin mx-auto my-5 block" size={100} />}
+      {!isloading && workers.length === 0 && (
         <Card>
           <CardContent className="text-center py-8">
             <User className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
