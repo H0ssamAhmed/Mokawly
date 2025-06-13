@@ -20,8 +20,7 @@ const App = () => (
 
   <ThemeProvider defaultTheme="light" storageKey="painting-app-theme">
     <AuthProvider>
-      <TooltipProvider>
-
+      <TooltipProvider skipDelayDuration={0}>
         <Sonner position="top-center" duration={5000} dir="rtl" />
         <BrowserRouter>
           <Routes>
