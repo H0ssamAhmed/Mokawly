@@ -11,11 +11,16 @@ export const addJobExpense = mutation({
   },
   handler: async (ctx, args) => {
     const expenseId = await ctx.db.insert("jobExpense", args);
-    return { ok: true, expenseId };
+    if (expenseId) {
+      const expense = await ctx.db.get(expenseId);
+      return { ok: true, expense };
+    }
+    return { ok: false, message: "فشل في اضافة  المبلغ حاول مجدداً" };
+
   },
 });
 
-export const addWorkerExpense = mutation({
+export const AddworkerExpense = mutation({
   args: {
     workerId: v.id("worker"),
     workerName: v.string(),
@@ -24,9 +29,15 @@ export const addWorkerExpense = mutation({
     date: v.string(),
     description: v.optional(v.string()),
   },
-  handler: async (ctx, args) => {
-    const expenseId = await ctx.db.insert("workerExpense", args);
-    return { ok: true, expenseId };
+  handler: async (ctx, { workerId, workerName, paidBy, amount, date, description }) => {
+    const workerExpenseId = await ctx.db.insert("workerExpense", { workerId, workerName, paidBy, amount, date, description });
+
+    if (workerExpenseId) {
+      const workerExpense = await ctx.db.get(workerExpenseId);
+      return { ok: true, workerExpense };
+    }
+    return { ok: false, message: "فشل في اضافة المصروف حاول مجدداً" };
+
   },
 });
 

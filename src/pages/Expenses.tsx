@@ -11,7 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { format } from "date-fns";
-import { CalendarIcon, Plus, Settings } from "lucide-react";
+import { CalendarIcon, Loader2, Plus, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
 import toast from "react-hot-toast";
 import { CustomSuccessToast } from "@/components/CustomSuccessToast";
@@ -19,7 +19,7 @@ import { useMutation, useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
 
 interface JobExpense {
-  id: string;
+  id?: string;
   type: string;
   paidBy: string,
   description: string;
@@ -56,9 +56,11 @@ export default function Expenses() {
       date: "2024-12-15",
     },
   ]);
-  const addWorkerExpense = useMutation(api.workers.workerExpense);
+  const addNewWorkerExpense = useMutation(api.expenses.AddworkerExpense);
+  const addNewJobExpense = useMutation(api.expenses.addJobExpense);
   const existWorkers = useQuery(api.worker.getWorkers);;
   const [workers, setWorkers] = useState([]);
+  const [loadingAddExpenses, setLoadingAddExpenses] = useState<boolean>(false);
 
   const [workerExpenses, setWorkerExpenses] = useState<WorkerExpense[]>([
     {
@@ -157,19 +159,35 @@ export default function Expenses() {
     }
 
     const newExpense: JobExpense = {
-      id: Date.now().toString(),
       type: jobFormData.type,
       description: jobFormData.description,
       paidBy: jobFormData.paidBy,
       amount: parseFloat(jobFormData.amount),
       date: format(jobFormData.date, "yyyy-MM-dd"),
     };
-    console.log(newExpense);
+    setLoadingAddExpenses(true);
+    addNewJobExpense(newExpense)
+      .then((res) => {
+        console.log(res);
 
+        const type = res.expense.type
+        toast.success(<h1>تم اضافة حساب   <b>{" " + type + " "} </b>  بنجاح</h1>, {
+          icon: "✅",
+          duration: 3000,
+        });
+      }).catch((error) => {
+        console.log(error);
 
-    // setIsJobDialogOpen(false);
-    // resetJobForm();
-    toast.custom((t) => <CustomSuccessToast t={t} name={`مصاريف ${newExpense.type}`} amount={newExpense.amount} />);
+        toast.error(<h1>حدث خطأ, {error.message}</h1>, {
+          icon: "❌",
+          duration: 3000,
+        });
+      }).finally(() => {
+        setIsWorkerDialogOpen(false);
+        resetWorkerForm();
+        setLoadingAddExpenses(false);
+
+      });
 
   };
 
@@ -182,12 +200,10 @@ export default function Expenses() {
       return;
     }
 
-
     if (!workerFormData.paidBy) {
       toast.error("يرجى ادخال من دفع المبلغ");
       return;
     }
-    const worker = workers.find(w => w.id === workerFormData.workerId);
     const newExpense: WorkerExpense = {
       workerId: workerFormData.workerId,
       workerName: workerFormData.workerName,
@@ -196,11 +212,26 @@ export default function Expenses() {
       date: format(workerFormData.date, "yyyy-MM-dd"),
       description: workerFormData.description || undefined,
     };
-
-    console.log(newExpense);
-
-    toast.custom((t) => <CustomSuccessToast t={t} name={newExpense.workerName} amount={newExpense.amount} />);
+    setLoadingAddExpenses(true);
+    addNewWorkerExpense(newExpense)
+      .then((res) => {
+        const name = res.workerExpense.workerName
+        toast.success(<h1>تم اضافة المصروف  بإسم  <b>{" " + name + " "} </b>  بنجاح</h1>, {
+          icon: "✅",
+          duration: 3000,
+        });
+      }).catch((error) => {
+        toast.error(<h1>حدث خطأ, {error.message}</h1>, {
+          icon: "❌",
+          duration: 3000,
+        });
+      }).finally(() => {
+        setIsWorkerDialogOpen(false);
+        resetWorkerForm();
+        setLoadingAddExpenses(false);
+      });
   };
+
 
   const totalJobExpenses = jobExpenses.reduce((sum, expense) => sum + expense.amount, 0);
   const totalWorkerExpenses = workerExpenses.reduce((sum, expense) => sum + expense.amount, 0);
@@ -258,94 +289,99 @@ export default function Expenses() {
                   <DialogTitle>إضافة مصروف عمل</DialogTitle>
                   <DialogDescription> المصاريف التعلقة بالشغل مثلا : الاكل - المواصلات - الخ</DialogDescription>
                 </DialogHeader>
-                <form onSubmit={handleJobSubmit} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="job-type">النوع *</Label>
-                    <Select dir="rtl" value={jobFormData.type} onValueChange={(value) => setJobFormData({ ...jobFormData, type: value })}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="اختر نوع المصروف" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {expenseTypes.map((type) => (
-                          <SelectItem key={type} value={type}>{type}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                {loadingAddExpenses ?
+                  <div className="">
+                    <Loader2 className="animate-spin mx-auto my-5 block" size={100} />
+                    <p className="text-xl text-center">جاري الاضافة...</p>
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="job-type">تم الدفع بواسطة*</Label>
-                    <Select dir="rtl" value={jobFormData.paidBy} onValueChange={(value) => setJobFormData({ ...jobFormData, paidBy: value })}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="اختر من قام بدفع هذا المبلغ " />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {paidBy.map((type) => (
-                          <SelectItem key={type} value={type}>{type}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
+                  : <form onSubmit={handleJobSubmit} className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="job-type">النوع *</Label>
+                      <Select dir="rtl" value={jobFormData.type} onValueChange={(value) => setJobFormData({ ...jobFormData, type: value })}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="اختر نوع المصروف" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {expenseTypes.map((type) => (
+                            <SelectItem key={type} value={type}>{type}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="job-type">تم الدفع بواسطة*</Label>
+                      <Select dir="rtl" value={jobFormData.paidBy} onValueChange={(value) => setJobFormData({ ...jobFormData, paidBy: value })}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="اختر من قام بدفع هذا المبلغ " />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {paidBy.map((type) => (
+                            <SelectItem key={type} value={type}>{type}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="job-description">الوصف *</Label>
-                    <Textarea
-                      id="job-description"
-                      value={jobFormData.description}
-                      onChange={(e) => setJobFormData({ ...jobFormData, description: e.target.value })}
-                      placeholder="وصف المصروف"
-                      required
-                    />
-                  </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="job-description">الوصف *</Label>
+                      <Textarea
+                        id="job-description"
+                        value={jobFormData.description}
+                        onChange={(e) => setJobFormData({ ...jobFormData, description: e.target.value })}
+                        placeholder="وصف المصروف"
+                        required
+                      />
+                    </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="job-amount">المبلغ *</Label>
-                    <Input
-                      id="job-amount"
-                      type="number"
-                      step="1"
-                      value={jobFormData.amount}
-                      onChange={(e) => setJobFormData({ ...jobFormData, amount: e.target.value })}
-                      placeholder="10 ر.س"
-                      required
-                    />
-                  </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="job-amount">المبلغ *</Label>
+                      <Input
+                        id="job-amount"
+                        type="number"
+                        step="1"
+                        value={jobFormData.amount}
+                        onChange={(e) => setJobFormData({ ...jobFormData, amount: e.target.value })}
+                        placeholder="10 ر.س"
+                        required
+                      />
+                    </div>
 
-                  <div className="space-y-2">
-                    <Label>التاريخ *</Label>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant="outline"
-                          className={cn(
-                            "w-full justify-start text-right font-normal",
-                            !jobFormData.date && "text-muted-foreground"
-                          )}
-                        >
-                          <CalendarIcon className="mr-2 h-4 w-4" />
-                          {jobFormData.date ? format(jobFormData.date, "dd/MM/yyyy") : "اختر التاريخ"}
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          mode="single"
-                          selected={jobFormData.date}
-                          onSelect={(date) => date && setJobFormData({ ...jobFormData, date })}
-                          // initialFocus={true}
-                          className="pointer-events-auto"
-                        />
-                      </PopoverContent>
-                    </Popover>
-                  </div>
+                    <div className="space-y-2">
+                      <Label>التاريخ *</Label>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            className={cn(
+                              "w-full justify-start text-right font-normal",
+                              !jobFormData.date && "text-muted-foreground"
+                            )}
+                          >
+                            <CalendarIcon className="mr-2 h-4 w-4" />
+                            {jobFormData.date ? format(jobFormData.date, "dd/MM/yyyy") : "اختر التاريخ"}
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar
+                            mode="single"
+                            selected={jobFormData.date}
+                            onSelect={(date) => date && setJobFormData({ ...jobFormData, date })}
+                            // initialFocus={true}
+                            className="pointer-events-auto"
+                          />
+                        </PopoverContent>
+                      </Popover>
+                    </div>
 
-                  <div className="flex gap-2 pt-4">
-                    <Button type="button" variant="outline" onClick={() => setIsJobDialogOpen(false)} className="flex-1">
-                      إلغاء
-                    </Button>
-                    <Button type="submit" className="flex-1">
-                      إضافة المصروف
-                    </Button>
-                  </div>
-                </form>
+                    <div className="flex gap-2 pt-4">
+                      <Button type="button" variant="outline" onClick={() => setIsJobDialogOpen(false)} className="flex-1">
+                        إلغاء
+                      </Button>
+                      <Button type="submit" className="flex-1">
+                        إضافة المصروف
+                      </Button>
+                    </div>
+                  </form>}
               </DialogContent>
             </Dialog>
           </div>
@@ -394,111 +430,111 @@ export default function Expenses() {
                   <DialogTitle>إضافة مصروف عامل</DialogTitle>
                   <DialogDescription>الدفعات والمصاريف المتعلقة بالعامل</DialogDescription>
                 </DialogHeader>
-                <form onSubmit={handleWorkerSubmit} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="worker-select">العامل *</Label>
-                    <Select dir="rtl" value={workerFormData.workerId}
-                      // onValueChange={
-                      //   (value) => setWorkerFormData({ ...workerFormData, workerId: value, workerName: workers.find(w => w.id === value)?.name })}
-                      onValueChange={(value) => {
-                        // console.log("Selected workerId:", value);
-                        // console.log("Selected workerName:", workers.find(w => w.id == value));
-                        const selectedWorkerId = workers.find(w => w._id === value)._id;
-                        console.log(selectedWorkerId);
-
-                        const selectedWorkerName = workers.find(w => w._id === value).name;
-                        console.log(selectedWorkerName);
-
-                        setWorkerFormData({
-                          ...workerFormData,
-                          workerId: selectedWorkerId,
-                          workerName: selectedWorkerName,
-                        });
-                      }}
-
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="اختر العامل" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {workers.map((worker) => (
-                          <SelectItem key={worker._id} value={worker._id}>{worker.name}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                {loadingAddExpenses ?
+                  <div className="">
+                    <Loader2 className="animate-spin mx-auto my-5 block" size={100} />
+                    <p className="text-xl text-center">جاري الاضافة...</p>
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="job-type">تم الدفع بواسطة*</Label>
-                    <Select dir="rtl" value={workerFormData.paidBy} onValueChange={(value) => setWorkerFormData({ ...workerFormData, paidBy: value })}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="اختر من قام بدفع هذا المبلغ " />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {paidBy.map((type) => (
-                          <SelectItem key={type} value={type}>{type}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="worker-amount">المبلغ *</Label>
-                    <Input
-                      id="worker-amount"
-                      type="number"
-                      step="0.01"
-                      value={workerFormData.amount}
-                      onChange={(e) => setWorkerFormData({ ...workerFormData, amount: e.target.value })}
-                      placeholder="10 ر.س"
-                      required
-                    />
-                  </div>
+                  :
+                  <form onSubmit={handleWorkerSubmit} className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="worker-select">العامل *</Label>
+                      <Select dir="rtl" value={workerFormData.workerId}
+                        onValueChange={(value) => {
+                          const selectedWorkerId = workers.find(w => w._id === value)._id;
+                          const selectedWorkerName = workers.find(w => w._id === value).name;
+                          setWorkerFormData({
+                            ...workerFormData,
+                            workerId: selectedWorkerId,
+                            workerName: selectedWorkerName,
+                          });
+                        }}
 
-                  <div className="space-y-2">
-                    <Label htmlFor="worker-description">الوصف</Label>
-                    <Textarea
-                      id="worker-description"
-                      value={workerFormData.description}
-                      onChange={(e) => setWorkerFormData({ ...workerFormData, description: e.target.value })}
-                      placeholder="مثل: سلفة، مكافأة، استرداد"
-                    />
-                  </div>
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="اختر العامل" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {workers.map((worker) => (
+                            <SelectItem key={worker._id} value={worker._id}>{worker.name}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="job-type">تم الدفع بواسطة*</Label>
+                      <Select dir="rtl" value={workerFormData.paidBy} onValueChange={(value) => setWorkerFormData({ ...workerFormData, paidBy: value })}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="اختر من قام بدفع هذا المبلغ " />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {paidBy.map((type) => (
+                            <SelectItem key={type} value={type}>{type}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="worker-amount">المبلغ *</Label>
+                      <Input
+                        id="worker-amount"
+                        type="number"
+                        step="1"
+                        value={workerFormData.amount}
+                        onChange={(e) => setWorkerFormData({ ...workerFormData, amount: e.target.value })}
+                        placeholder="10 ر.س"
+                        required
+                      />
+                    </div>
 
-                  <div className="space-y-2">
-                    <Label>التاريخ *</Label>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant="outline"
-                          className={cn(
-                            "w-full justify-start text-right font-normal",
-                            !workerFormData.date && "text-muted-foreground"
-                          )}
-                        >
-                          <CalendarIcon className="mr-2 h-4 w-4" />
-                          {workerFormData.date ? format(workerFormData.date, "dd/MM/yyyy") : "اختر التاريخ"}
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          mode="single"
-                          selected={workerFormData.date}
-                          onSelect={(date) => date && setWorkerFormData({ ...workerFormData, date })}
-                          initialFocus
-                          className="pointer-events-auto"
-                        />
-                      </PopoverContent>
-                    </Popover>
-                  </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="worker-description">الوصف</Label>
+                      <Textarea
+                        id="worker-description"
+                        value={workerFormData.description}
+                        onChange={(e) => setWorkerFormData({ ...workerFormData, description: e.target.value })}
+                        placeholder="مثل: سلفة، مكافأة، استرداد"
+                      />
+                    </div>
 
-                  <div className="flex gap-2 pt-4">
-                    <Button type="button" variant="outline" onClick={() => setIsWorkerDialogOpen(false)} className="flex-1">
-                      إلغاء
-                    </Button>
-                    <Button type="submit" className="flex-1">
-                      إضافة المصروف
-                    </Button>
-                  </div>
-                </form>
+                    <div className="space-y-2">
+                      <Label>التاريخ *</Label>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            className={cn(
+                              "w-full justify-start text-right font-normal",
+                              !workerFormData.date && "text-muted-foreground"
+                            )}
+                          >
+                            <CalendarIcon className="mr-2 h-4 w-4" />
+                            {workerFormData.date ? format(workerFormData.date, "dd/MM/yyyy") : "اختر التاريخ"}
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar
+                            mode="single"
+                            selected={workerFormData.date}
+                            onSelect={(date) => date && setWorkerFormData({ ...workerFormData, date })}
+                            initialFocus
+                            className="pointer-events-auto"
+                          />
+                        </PopoverContent>
+                      </Popover>
+                    </div>
+
+                    <div className="flex gap-2 pt-4">
+                      <Button type="button" variant="outline" onClick={() => setIsWorkerDialogOpen(false)} className="flex-1">
+                        إلغاء
+                      </Button>
+                      <Button type="submit" className="flex-1">
+                        إضافة المصروف
+                      </Button>
+                    </div>
+                  </form>
+                }
+
               </DialogContent>
             </Dialog>
           </div>
