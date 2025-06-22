@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
-import { Plus, Edit, Trash, User, Loader2 } from "lucide-react";
+import { Plus, User } from "lucide-react";
 import { toast } from "sonner";
 import { api } from '../../convex/_generated/api';
 import { useMutation, useQuery } from "convex/react";
@@ -29,7 +29,7 @@ export default function Workers() {
     name: "",
     dailyWage: 0,
     type: "عامل" as "عامل" | "صنايعي",
-    phone: "لم يتم ادخال رقم الهاتف",
+    phone: "",
     isPublished: false,
   });
   useEffect(() => {

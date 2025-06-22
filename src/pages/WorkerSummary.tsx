@@ -1,10 +1,12 @@
 
-import { useParams } from "react-router-dom";
+import { useParams, useSearchParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { User, Calendar, Home } from "lucide-react";
+import { useQuery } from "convex/react";
+import { api } from "../../convex/_generated/api";
 
 interface Worker {
   id: string;
@@ -29,8 +31,19 @@ interface WorkerExpense {
 
 export default function WorkerSummary() {
   const { workerId } = useParams();
+  const [searchParams] = useSearchParams();
+
+  const name = searchParams.get("name");
+  const type = searchParams.get("type");
+
+  console.log(name);
+  console.log(type);
+
   const [worker, setWorker] = useState<Worker | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const workerdata = useQuery(api.worker.getWorker, { id: workerId })
+  console.log(workerdata);
+
 
   // Mock data - in real app, this would come from Supabase
   const mockWorkers: Worker[] = [
@@ -53,15 +66,13 @@ export default function WorkerSummary() {
   ];
 
   useEffect(() => {
-    // Simulate API call
-    const timer = setTimeout(() => {
-      const foundWorker = mockWorkers.find(w => w.id === workerId);
-      setWorker(foundWorker || null);
+    if (workerdata) {
+      console.log(workerdata);
+      setWorker(workerdata.worker);
+      console.log(workerdata);
       setIsLoading(false);
-    }, 500);
-
-    return () => clearTimeout(timer);
-  }, [workerId]);
+    }
+  }, [workerdata]);
 
   if (isLoading) {
     return (
@@ -71,22 +82,16 @@ export default function WorkerSummary() {
     );
   }
 
-  if (!worker) {
+  if (!worker && workerdata.ok) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-muted/30 p-4">
         <Card className="w-full max-w-md text-center">
           <CardContent className="pt-6">
             <User className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <h1 className="text-xl font-bold mb-2">Worker Not Found</h1>
+            <h1 className="text-xl font-bold mb-2">العامل المطلوب غير متاح</h1>
             <p className="text-muted-foreground mb-4">
-              The worker profile you're looking for doesn't exist or has been removed.
+              {workerdata.message}
             </p>
-            <Button asChild>
-              <a href="/">
-                <Home className="mr-2 h-4 w-4" />
-                Go Home
-              </a>
-            </Button>
           </CardContent>
         </Card>
       </div>

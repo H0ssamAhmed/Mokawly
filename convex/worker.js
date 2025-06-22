@@ -28,9 +28,12 @@ export const getWorker = query({
   handler: async (ctx, { id }) => {
     const worker = await ctx.db.get(id);
     if (!worker) {
-      throw new ConvexError("Worker not found");
+      return { ok: false, message: " عامل غير موجود", worker: null };
     }
-    return { ok: true, worker };
+    if (!worker.isPublished) {
+      return { ok: true, message: "بيانات العامل غير مفتوحة- يرجى التواصل مع احد المسؤليين", worker: null };
+    }
+    return { ok: true, message: "بيانات العامل مفتوحة", worker };
   },
 });
 
@@ -75,3 +78,18 @@ export const publishWorker = mutation({
     return { ok: true, message: "Worker published successfully" };
   },
 })
+export const workerExpense = mutation({
+  args: {
+    workerId: v.id("worker"),
+    workerName: v.string(),
+    paidBy: v.string(),
+    amount: v.number(),
+    date: v.string(),
+    description: v.optional(v.string()),
+  },
+  handler: async (ctx, { workerId, workerName, paidBy, amount, date, description }) => {
+    const workerExpenseId = await ctx.db.insert("workerExpense", { workerId, workerName, paidBy, amount, date, description });
+    const workerExpense = await ctx.db.get(workerExpenseId);
+    return { ok: true, workerExpense };
+  },
+});

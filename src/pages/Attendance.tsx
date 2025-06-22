@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -24,19 +24,26 @@ interface AttendanceRecord {
   totalWages: number;
 }
 
+import { api } from '../../convex/_generated/api';
+import { useMutation, useQuery } from "convex/react";
+import { WorkerType } from "@/types/SharedTypes";
+import { Badge } from "@/components/ui/badge";
 export default function Attendance() {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [presentWorkers, setPresentWorkers] = useState<string[]>([]);
-  
-  // Mock workers data
-  const workers: Worker[] = [
-    { id: "1", name: "أحمد محمد", dailyWage: 300, type: "حرفي" },
-    { id: "2", name: "محمد علي", dailyWage: 250, type: "عامل" },
-    { id: "3", name: "خالد سعد", dailyWage: 280, type: "حرفي" },
-    { id: "4", name: "عبدالله أحمد", dailyWage: 230, type: "عامل" },
-    { id: "5", name: "سعد محمود", dailyWage: 270, type: "عامل" },
-  ];
+  const getAllWorkers = useQuery(api.worker.getWorkers);
+  const saveDailyAttendances = useMutation(api.attendance.saveAttendances);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [workers, setWorkers] = useState<WorkerType[]>([])
+  const [attendanceWorkersInfo, setAttendanceWorkersInfo] = useState<WorkerType[]>([])
 
+  // Mock workers data
+  useEffect(() => {
+    if (getAllWorkers) {
+      setWorkers(getAllWorkers.workers);
+      setLoading(false);
+    }
+  }, [getAllWorkers])
   // Mock attendance records
   const [attendanceRecords, setAttendanceRecords] = useState<AttendanceRecord[]>([
     {
@@ -53,17 +60,21 @@ export default function Attendance() {
     },
   ]);
 
-  const toggleWorkerAttendance = (workerId: string) => {
-    setPresentWorkers(prev => 
+  const toggleWorkerAttendance = (workerId: string, worker: WorkerType) => {
+    setAttendanceWorkersInfo(prev => prev.includes(worker) ? prev.filter(w => w._id !== worker._id) : [...prev, worker])
+
+    setPresentWorkers(prev =>
       prev.includes(workerId)
         ? prev.filter(id => id !== workerId)
         : [...prev, workerId]
     );
+
+
   };
 
   const calculateTotalWages = () => {
     return presentWorkers.reduce((total, workerId) => {
-      const worker = workers.find(w => w.id === workerId);
+      const worker = workers.find(w => w._id === workerId);
       return total + (worker?.dailyWage || 0);
     }, 0);
   };
@@ -80,25 +91,28 @@ export default function Attendance() {
 
     const totalWages = calculateTotalWages();
     const dateString = format(selectedDate, "yyyy-MM-dd");
-    
-    const newRecord: AttendanceRecord = {
-      id: Date.now().toString(),
-      date: dateString,
-      presentWorkers: [...presentWorkers],
-      totalWages,
-    };
 
-    // Remove existing record for the same date if any
-    const filteredRecords = attendanceRecords.filter(r => r.date !== dateString);
-    setAttendanceRecords([...filteredRecords, newRecord]);
-    
-    // Reset selection
-    setPresentWorkers([]);
-    
-    toast({
-      title: "نجح",
-      description: `تم حفظ الحضور لتاريخ ${format(selectedDate, "dd/MM/yyyy")}. إجمالي الأجور: ${totalWages.toLocaleString('ar-SA')} ر.س`,
-    });
+
+
+    const attendancedata: { workerId: string, name: string, dailyWage: number, date: string }[] = []
+    workers.filter((worker) => {
+      if (presentWorkers.includes(worker._id)) {
+        attendancedata.push({
+          workerId: worker._id,
+          name: worker.name,
+          dailyWage: worker.dailyWage,
+          date: dateString
+        })
+      }
+    })
+    saveDailyAttendances({ records: attendancedata })
+      .then((res) => {
+        console.log(res);
+      }).catch((err) => {
+        console.log(err);
+      })
+
+
   };
 
   // Get existing attendance for selected date
@@ -162,18 +176,23 @@ export default function Attendance() {
             </CardHeader>
             <CardContent className="space-y-4">
               {workers.map((worker) => (
-                <div key={worker.id} className="flex items-center justify-between p-3 border rounded-lg">
+                <div key={worker._id} className="flex items-center justify-between p-3 border rounded-lg">
                   <div className="flex items-center space-x-3 space-x-reverse">
                     <Checkbox
-                      id={worker.id}
-                      checked={presentWorkers.includes(worker.id)}
-                      onCheckedChange={() => toggleWorkerAttendance(worker.id)}
+                      id={worker._id}
+                      checked={presentWorkers.includes(worker._id)}
+                      onCheckedChange={() => toggleWorkerAttendance(worker._id, worker)}
                     />
                     <div>
-                      <label htmlFor={worker.id} className="font-medium cursor-pointer">
+                      <label htmlFor={worker._id} className="font-medium cursor-pointer">
                         {worker.name}
                       </label>
-                      <p className="text-sm text-muted-foreground">{worker.type}</p>
+                      <Badge
+                        variant={worker.type === "صنايعي" ? "default" : "secondary"}
+                        className={cn("text-white mx-4", worker.type === "صنايعي" ? "bg-orange-700" : "bg-green-700")}
+                      >
+                        {worker.type}
+                      </Badge>
                     </div>
                   </div>
                   <div className="text-left">
@@ -197,15 +216,15 @@ export default function Attendance() {
                 <p className="text-sm text-muted-foreground">العمال الحاضرون</p>
                 <p className="text-2xl font-bold">{presentWorkers.length}</p>
               </div>
-              
+
               <div className="text-center p-4 bg-muted rounded-lg">
                 <p className="text-sm text-muted-foreground">إجمالي الأجور</p>
                 <p className="text-2xl font-bold text-green-600">
                   {calculateTotalWages().toLocaleString('ar-SA')} ر.س
                 </p>
               </div>
-              
-              <Button 
+
+              <Button
                 onClick={saveAttendance}
                 className="w-full"
                 disabled={presentWorkers.length === 0}

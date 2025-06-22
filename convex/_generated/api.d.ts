@@ -13,6 +13,8 @@ import type {
   FilterApi,
   FunctionReference,
 } from "convex/server";
+import type * as attendance from "../attendance.js";
+import type * as expenses from "../expenses.js";
 import type * as worker from "../worker.js";
 
 /**
@@ -24,6 +26,8 @@ import type * as worker from "../worker.js";
  * ```
  */
 declare const fullApi: ApiFromModules<{
+  attendance: typeof attendance;
+  expenses: typeof expenses;
   worker: typeof worker;
 }>;
 export declare const api: FilterApi<
