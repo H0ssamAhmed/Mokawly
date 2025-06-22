@@ -53,4 +53,51 @@ export const getWorkerExpenses = query({
     const expenses = await ctx.db.query("workerExpense").collect();
     return { ok: true, expenses };
   },
-}); 
+});
+export const deleteWorkerExpense = mutation({
+  args: { id: v.id("workerExpense") },
+  handler: async (ctx, { id }) => {
+    const deletedId = await ctx.db.delete(id);
+    console.log(deletedId);
+    return { ok: true, message: "تم حذف المصروف بنجاح" };
+  },
+});
+export const updateWorkerExpense = mutation({
+  args: {
+    id: v.id("workerExpense"),
+    workerId: v.id("worker"),
+    workerName: v.string(),
+    paidBy: v.string(),
+    amount: v.number(),
+    date: v.string(),
+    description: v.optional(v.string()),
+  },
+  handler: async (ctx, { id, workerId, workerName, paidBy, amount, date, description }) => {
+    await ctx.db.update(id, { workerId, workerName, paidBy, amount, date, description });
+    return { ok: true, message: "تم تحديث المصروف بنجاح" };
+  },
+})
+export const deleteJobExpense = mutation({
+  args: { id: v.id("jobExpense") },
+  handler: async (ctx, { id }) => {
+    const deletedId = await ctx.db.delete(id);
+    console.log(deletedId);
+
+    return { ok: true, message: "تم حذف المصروف بنجاح" };
+  },
+})
+
+export const updateJobExpense = mutation({
+  args: {
+    id: v.id("jobExpense"),
+    type: v.string(),
+    description: v.string(),
+    paidBy: v.string(),
+    amount: v.number(),
+    date: v.string(),
+  },
+  handler: async (ctx, { id, type, description, paidBy, amount, date }) => {
+    await ctx.db.update(id, { type, description, paidBy, amount, date });
+    return { ok: true, message: "تم تحديث المصروف بنجاح" };
+  },
+})

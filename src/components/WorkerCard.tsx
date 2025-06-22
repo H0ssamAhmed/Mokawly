@@ -17,6 +17,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogContent, AlertDialogDescript
 import { toast } from 'sonner'
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip'
 import ReqiureInputSgin from './ReqiureInputSgin'
+import { Textarea } from './ui/textarea'
 interface Props {
   worker: WorkerType,
   formData: WorkerType,
@@ -37,6 +38,7 @@ const WorkerCard = ({ worker, setFormData, formData }: Props) => {
       dailyWage: Number(worker.dailyWage),
       type: worker.type,
       phone: worker.phone || null,
+      note: worker.note || null,
       isPublished: worker.isPublished,
     });
   };
@@ -100,7 +102,7 @@ const WorkerCard = ({ worker, setFormData, formData }: Props) => {
             <CardTitle className="text-base">{worker.name}</CardTitle>
           </div>
           <Dialog open={isEditingWorker} onOpenChange={setIsEditingWorker} >
-            <DialogContent className="max-w-md" dir="rtl">
+            <DialogContent className="max-w-md max-h-screen overflow-y-scroll" dir="rtl">
               <DialogHeader>
                 <div className="flex items-start justify-center flex-col gap-2 p-4">
                   <DialogTitle className="text-2xl">
@@ -160,7 +162,15 @@ const WorkerCard = ({ worker, setFormData, formData }: Props) => {
                     placeholder="+966501234567"
                   />
                 </div>
-
+                <div className="space-y-2">
+                  <Label htmlFor="note">ملاحظه عن هذا العامل (اختياري)</Label>
+                  <Textarea
+                    id="note"
+                    value={formData.note}
+                    onChange={(e) => setFormData({ ...formData, note: e.target.value })}
+                    placeholder="ملاحظه عن حساب قدم مثلا او شئ اخر"
+                  />
+                </div>
                 <div className="flex items-center space-x-2 space-x-reverse">
                   <Switch
                     dir="ltr"

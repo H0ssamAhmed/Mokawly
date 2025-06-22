@@ -15,6 +15,7 @@ import { WorkerType } from "@/types/SharedTypes";
 import ReqiureInputSgin from "@/components/ReqiureInputSgin";
 import WorkerCard from "@/components/WorkerCard";
 import SpinnerLoader from "@/components/SpinnerLoader";
+import { Textarea } from "@/components/ui/textarea";
 
 
 
@@ -30,6 +31,7 @@ export default function Workers() {
     dailyWage: 0,
     type: "عامل" as "عامل" | "صنايعي",
     phone: "",
+    note: "",
     isPublished: false,
   });
   useEffect(() => {
@@ -45,6 +47,7 @@ export default function Workers() {
       dailyWage: 0,
       type: "عامل",
       phone: "",
+      note: "",
       isPublished: false,
     });
     setEditingWorker(null);
@@ -102,7 +105,7 @@ export default function Workers() {
               إضافة عامل
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-md" dir="rtl">
+          <DialogContent className="max-w-md max-h-screen overflow-y-scroll" dir="rtl">
             <DialogHeader>
               <div className="flex items-start justify-center flex-col gap-2 p-4">
                 <DialogTitle className="text-2xl">
@@ -141,7 +144,7 @@ export default function Workers() {
 
               <div className="space-y-2">
                 <Label htmlFor="type">النوع  <ReqiureInputSgin /></Label>
-                <Select value={formData.type} onValueChange={(value: "عامل" | "صنايعي") => setFormData({ ...formData, type: value })}>
+                <Select dir='rtl' value={formData.type} onValueChange={(value: "عامل" | "صنايعي") => setFormData({ ...formData, type: value })}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -151,6 +154,7 @@ export default function Workers() {
                   </SelectContent>
                 </Select>
               </div>
+
 
               <div className="space-y-2">
                 <Label htmlFor="phone">رقم الهاتف (اختياري)</Label>
@@ -162,7 +166,15 @@ export default function Workers() {
                   placeholder="+966501234567"
                 />
               </div>
-
+              <div className="space-y-2">
+                <Label htmlFor="note">ملاحظه عن هذا العامل (اختياري)</Label>
+                <Textarea
+                  id="note"
+                  value={formData.note}
+                  onChange={(e) => setFormData({ ...formData, note: e.target.value })}
+                  placeholder="ملاحظه عن حساب قدم مثلا او شئ اخر"
+                />
+              </div>
               <div className="flex items-center space-x-2 space-x-reverse">
                 <Switch
                   dir="ltr"

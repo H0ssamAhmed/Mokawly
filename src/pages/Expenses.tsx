@@ -11,80 +11,51 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { format } from "date-fns";
-import { CalendarIcon, Loader2, Plus, Settings } from "lucide-react";
+import { CalendarIcon, Loader2, MousePointerClick, MousePointerClickIcon, Plus, Settings, Trash2Icon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import toast from "react-hot-toast";
-import { CustomSuccessToast } from "@/components/CustomSuccessToast";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
+import { useSearchParams } from "react-router-dom";
+import { JobExpense, WorkerExpense } from "@/types/SharedTypes";
+import EmptyData from "@/components/EmptyData";
+import WorkerExpensesCard from "@/components/workerExpensesCard";
+import JobExpensesCard from "@/components/JobExpensesCard";
 
-interface JobExpense {
-  id?: string;
-  type: string;
-  paidBy: string,
-  description: string;
-  amount: number;
-  date: string;
-}
 
-interface WorkerExpense {
-  id?: string;
-  workerId: string;
-  paidBy: string,
-  workerName: string;
-  amount: number;
-  date: string;
-  description?: string;
-}
+// Mock workers data
 
+const expenseTypes = [
+  "المواصلات",
+  "الطعام",
+  "المواد",
+  "الأدوات",
+  "المعدات",
+  "أخرى",
+];
+const paidBy = [
+  "عصام عطيه",
+  "حسام احمد",
+  "السيد عاطف",
+];
 export default function Expenses() {
-  const [jobExpenses, setJobExpenses] = useState<JobExpense[]>([
-    {
-      id: "1",
-      type: "المواصلات",
-      paidBy: "حسام احمد",
-      description: "بنزين شاحنة العمل",
-      amount: 120.00,
-      date: "2024-12-15",
-    },
-    {
-      id: "2",
-      type: "الطعام",
-      paidBy: "عصام عطيه",
-      description: "غداء للفريق",
-      amount: 180.00,
-      date: "2024-12-15",
-    },
-  ]);
   const addNewWorkerExpense = useMutation(api.expenses.AddworkerExpense);
   const addNewJobExpense = useMutation(api.expenses.addJobExpense);
+  const getAllWorkerExpenses = useQuery(api.expenses.getWorkerExpenses);
+  const getAllJobExpenses = useQuery(api.expenses.getJobExpenses);
   const existWorkers = useQuery(api.worker.getWorkers);;
-  const [workers, setWorkers] = useState([]);
+
+  const [jobExpenses, setJobExpenses] = useState<JobExpense[]>([]);
+  const [totalWorkerExpenses, setTotalWorkerExpenses] = useState<number>(0)
+  const [totalJobExpenses, setTotalJobExpenses] = useState<number>(0)
   const [loadingAddExpenses, setLoadingAddExpenses] = useState<boolean>(false);
-
-  const [workerExpenses, setWorkerExpenses] = useState<WorkerExpense[]>([
-    {
-      id: "1",
-      workerId: "1",
-      workerName: "أحمد محمد",
-      paidBy: "عصام عطيه",
-      amount: 500.00,
-      date: "2024-12-14",
-      description: "سلفة",
-    },
-    {
-      id: "2",
-      workerId: "2",
-      workerName: "محمد علي",
-      paidBy: "عصام عطيه",
-      amount: 100.00,
-      date: "2024-12-13",
-      description: "مكافأة",
-    },
-  ]);
-
+  const [workerExpenses, setWorkerExpenses] = useState<WorkerExpense[]>([]);
   const [isJobDialogOpen, setIsJobDialogOpen] = useState(false);
   const [isWorkerDialogOpen, setIsWorkerDialogOpen] = useState(false);
+  const [searchParams, setSearchParams] = useSearchParams()
+  const [activeTab, setActiveTab] = useState<string>(searchParams.get("tab") || "job");
+
+  const [workers, setWorkers] = useState([]);
 
   const [jobFormData, setJobFormData] = useState({
     type: "",
@@ -103,27 +74,22 @@ export default function Expenses() {
     date: new Date(),
   });
 
-  // Mock workers data
 
-  const expenseTypes = [
-    "المواصلات",
-    "الطعام",
-    "المواد",
-    "الأدوات",
-    "المعدات",
-    "أخرى",
-  ];
-  const paidBy = [
-    "عصام عطيه",
-    "حسام احمد",
-    "السيد عاطف",
-  ];
   useEffect(() => {
     if (existWorkers) {
       setWorkers(existWorkers.workers);
-      console.log(existWorkers.workers);
     }
-  }, [existWorkers])
+    if (getAllJobExpenses) {
+      setJobExpenses(getAllJobExpenses.expenses);
+      const total = getAllJobExpenses.expenses.reduce((sum, expense) => sum + expense.amount, 0);
+      setTotalJobExpenses(total)
+    }
+    if (getAllWorkerExpenses) {
+      setWorkerExpenses(getAllWorkerExpenses.expenses);
+      const total = getAllWorkerExpenses.expenses.reduce((sum, expense) => sum + expense.amount, 0);
+      setTotalWorkerExpenses(total)
+    }
+  }, [existWorkers, getAllJobExpenses, getAllWorkerExpenses])
   const resetJobForm = () => {
     setJobFormData({
       type: "",
@@ -183,7 +149,7 @@ export default function Expenses() {
           duration: 3000,
         });
       }).finally(() => {
-        setIsWorkerDialogOpen(false);
+        setIsJobDialogOpen(false);
         resetWorkerForm();
         setLoadingAddExpenses(false);
 
@@ -232,30 +198,24 @@ export default function Expenses() {
       });
   };
 
-
-  const totalJobExpenses = jobExpenses.reduce((sum, expense) => sum + expense.amount, 0);
-  const totalWorkerExpenses = workerExpenses.reduce((sum, expense) => sum + expense.amount, 0);
+  const handelChangeTab = (tab: string) => {
+    setActiveTab(tab);
+    setSearchParams({ "tab": tab });
+  }
 
   return (
-    <div className="p-4 lg:p-6 space-y-6" dir="rtl">
+    <div className="container p-4 lg:p-6 space-y-6" dir="rtl">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <h1 className="text-2xl lg:text-3xl font-bold">المصروفات</h1>
       </div>
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">إجمالي مصروفات العمل</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-red-600">
-              {totalJobExpenses.toLocaleString('ar-SA')} ر.س
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
+        <Card
+          onClick={() => handelChangeTab('worker')}
+          className={cn("relative cursor-pointer",
+            activeTab == "worker" && "bg-primary"
+          )}>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">إجمالي مصروفات العمال</CardTitle>
           </CardHeader>
@@ -264,19 +224,44 @@ export default function Expenses() {
               {totalWorkerExpenses.toLocaleString('ar-SA')} ر.س
             </div>
           </CardContent>
+          <MousePointerClick
+            className="absolute rotate-90 left-0 top-4 text-destructive"
+            size={80}
+          />
         </Card>
+
+        <Card
+          dir="rtl"
+          onClick={() => handelChangeTab('job')}
+          className={cn("relative cursor-pointer",
+            activeTab == "job" && "bg-primary text-white"
+          )}>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">إجمالي مصروفات العمل</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-red-600">
+              {totalJobExpenses.toLocaleString('ar-SA')} ر.س
+            </div>
+          </CardContent>
+          <MousePointerClick
+            className="absolute rotate-90 left-0 top-4 text-destructive"
+            size={80}
+          />
+        </Card>
+
+
       </div>
 
-      <Tabs defaultValue="job" className="space-y-6">
+      <Tabs value={activeTab} defaultValue={activeTab} className="space-y-6">
         <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="job">متعلقة بالعمل</TabsTrigger>
-          <TabsTrigger value="worker">خاصة بالعمال</TabsTrigger>
+          <TabsTrigger onClick={() => handelChangeTab('job')} value="job">متعلقة بالعمل</TabsTrigger>
+          <TabsTrigger onClick={() => handelChangeTab('worker')} value="worker">خاصة بالعمال</TabsTrigger>
         </TabsList>
 
         <TabsContent value="job" className="space-y-6">
-          <div className="flex justify-between items-center">
+          <div className="flex gap-y-5 flex-col-reverse md:flex-row justify-between items-center">
             <h2 className="text-xl font-semibold">المصروفات المتعلقة بالعمل</h2>
-
             <Dialog open={isJobDialogOpen} onOpenChange={setIsJobDialogOpen}>
               <DialogTrigger asChild>
                 <Button onClick={resetJobForm}>
@@ -284,7 +269,8 @@ export default function Expenses() {
                   إضافة مصروف عمل
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-md">
+              <DialogContent className="max-w-md max-h-screen overflow-y-scroll" dir="rtl">
+
                 <DialogHeader className="items-start p-4">
                   <DialogTitle>إضافة مصروف عمل</DialogTitle>
                   <DialogDescription> المصاريف التعلقة بالشغل مثلا : الاكل - المواصلات - الخ</DialogDescription>
@@ -385,38 +371,20 @@ export default function Expenses() {
               </DialogContent>
             </Dialog>
           </div>
+          <hr className='w-full' />
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {jobExpenses.map((expense) => (
-              <Card key={expense.id}>
-                <CardHeader className="pb-3">
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-2">
-                      <Settings className="h-4 w-4 text-muted-foreground" />
-                      <CardTitle className="text-sm">{expense.type}</CardTitle>
-                    </div>
-                    <span className="text-lg font-bold text-red-600">
-                      -{expense.amount.toLocaleString('ar-SA')} ر.س
-                    </span>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-muted-foreground mb-2">
-                    {expense.description}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {format(new Date(expense.date), "dd/MM/yyyy")}
-                  </p>
-                </CardContent>
-              </Card>
-            ))}
+          {!jobExpenses.length &&
+            <EmptyData />
+          }
+          {/* <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"> */}
+          <div className="flex flex-wrap justify-center items-center  flex-row-reverse gap-4">
+            {jobExpenses.map(expense => <JobExpensesCard expense={expense} key={expense._id} />)}
           </div>
         </TabsContent>
 
         <TabsContent value="worker" className="space-y-6">
-          <div className="flex justify-between items-center">
+          <div className="flex gap-y-5 flex-col-reverse md:flex-row justify-between items-center">
             <h2 className="text-xl font-semibold">المصروفات الخاصة بالعمال</h2>
-
             <Dialog open={isWorkerDialogOpen} onOpenChange={setIsWorkerDialogOpen}>
               <DialogTrigger asChild>
                 <Button onClick={resetWorkerForm}>
@@ -424,7 +392,7 @@ export default function Expenses() {
                   إضافة مصروف عامل
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-md">
+              <DialogContent className="max-w-md max-h-screen overflow-y-scroll" dir="rtl">
                 <DialogHeader className="items-start p-4">
 
                   <DialogTitle>إضافة مصروف عامل</DialogTitle>
@@ -539,29 +507,11 @@ export default function Expenses() {
             </Dialog>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {workerExpenses.map((expense) => (
-              <Card key={expense.id}>
-                <CardHeader className="pb-3">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <CardTitle className="text-sm">{expense.workerName}</CardTitle>
-                      {expense.description && (
-                        <p className="text-xs text-muted-foreground">{expense.description}</p>
-                      )}
-                    </div>
-                    <span className="text-lg font-bold text-red-600">
-                      -{expense.amount.toLocaleString('ar-SA')} ر.س
-                    </span>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-xs text-muted-foreground">
-                    {format(new Date(expense.date), "dd/MM/yyyy")}
-                  </p>
-                </CardContent>
-              </Card>
-            ))}
+          <hr className='w-full' />
+          {!workerExpenses.length && <EmptyData />}
+          {/* <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"> */}
+          <div className="flex flex-wrap justify-center items-center  flex-row-reverse gap-4">
+            {workerExpenses.map(expense => <WorkerExpensesCard expense={expense} key={expense._id} />)}
           </div>
         </TabsContent>
       </Tabs>

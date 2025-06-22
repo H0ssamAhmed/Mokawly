@@ -8,6 +8,7 @@ export default defineSchema({
     type: v.string(),
     dailyWage: v.number(),
     isPublished: v.boolean(),
+    note: v.optional(v.string()),
   }),
 
   attendance: defineTable({
