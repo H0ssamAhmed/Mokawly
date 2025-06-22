@@ -19,7 +19,7 @@ import { api } from "../../convex/_generated/api";
 import { useSearchParams } from "react-router-dom";
 import { JobExpense, WorkerExpense } from "@/types/SharedTypes";
 import EmptyData from "@/components/EmptyData";
-import WorkerExpensesCard from "@/components/workerExpensesCard";
+import WorkerExpensesCard from "@/components/WorkerExpensesCard";
 import JobExpensesCard from "@/components/JobExpensesCard";
 
 
