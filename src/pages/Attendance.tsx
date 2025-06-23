@@ -3,10 +3,9 @@ import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { format } from "date-fns";
-import { CalendarIcon, Calendar as CalendarLucide } from "lucide-react";
+import { CalendarIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
 
@@ -28,6 +27,11 @@ import { api } from '../../convex/_generated/api';
 import { useMutation, useQuery } from "convex/react";
 import { WorkerType } from "@/types/SharedTypes";
 import { Badge } from "@/components/ui/badge";
+import { DayPicker } from "react-day-picker";
+import { ar } from "date-fns/locale";
+import CustomDayPicker from "@/components/CustomDayPicker";
+import CardSkeleton from "@/components/CardSkeleton";
+import SpinnerLoader from "@/components/SpinnerLoader";
 export default function Attendance() {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [presentWorkers, setPresentWorkers] = useState<string[]>([]);
@@ -146,17 +150,15 @@ export default function Attendance() {
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={selectedDate}
-                    onSelect={(date) => {
+
+                  <CustomDayPicker
+                    OnSelectFn={(date) => {
                       if (date) {
                         setSelectedDate(date);
                         setPresentWorkers([]); // Reset selection when date changes
                       }
                     }}
-                    initialFocus
-                    className="pointer-events-auto"
+                    selectedDate={selectedDate}
                   />
                 </PopoverContent>
               </Popover>
@@ -166,7 +168,7 @@ export default function Attendance() {
           <Card>
             <CardHeader>
               <CardTitle>
-                تسجيل حضور العمال - {format(selectedDate, "dd/MM/yyyy")}
+                تسجيل حضور العمال - {format(selectedDate, "EEEE", { locale: ar })}-  {format(selectedDate, "dd/MM/yyyy")}
               </CardTitle>
               {existingAttendance && (
                 <p className="text-sm text-muted-foreground">
@@ -175,7 +177,8 @@ export default function Attendance() {
               )}
             </CardHeader>
             <CardContent className="space-y-4">
-              {workers.map((worker) => (
+              {loading && <SpinnerLoader />}
+              {!loading && workers.map((worker) => (
                 <div key={worker._id} className="flex items-center justify-between p-3 border rounded-lg">
                   <div className="flex items-center space-x-3 space-x-reverse">
                     <Checkbox

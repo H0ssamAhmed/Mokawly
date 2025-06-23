@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
-import { Plus, User } from "lucide-react";
+import { Grid3X3, Plus, Rows3, User } from "lucide-react";
 import { toast } from "sonner";
 import { api } from '../../convex/_generated/api';
 import { useMutation, useQuery } from "convex/react";
@@ -16,6 +16,8 @@ import ReqiureInputSgin from "@/components/ReqiureInputSgin";
 import WorkerCard from "@/components/WorkerCard";
 import SpinnerLoader from "@/components/SpinnerLoader";
 import { Textarea } from "@/components/ui/textarea";
+import { cn } from "@/lib/utils";
+import WorkerList from "@/components/WorkerList";
 
 
 
@@ -25,6 +27,7 @@ export default function Workers() {
   const [workers, setWorkers] = useState<WorkerType[]>([])
   const [isloading, setIsloading] = useState<boolean>(true)
   const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
+  const [itemsView, setItemsView] = useState<string>("grid")
   const [editingWorker, setEditingWorker] = useState<WorkerType | null>(null);
   const [formData, setFormData] = useState({
     name: "",
@@ -63,10 +66,12 @@ export default function Workers() {
       name: formData.name,
       dailyWage: +(formData.dailyWage),
       type: formData.type,
+      note: formData.note,
       phone: formData.phone || "لم يتم ادخال رقم الهاتف",
       isPublished: formData.isPublished,
     };
     setIsloading(true);
+
     addWorker(workerData)
       .then((res) => {
         toast.error(`تم اضافة ${res.worker.name} بنحاح`, {
@@ -197,18 +202,42 @@ export default function Workers() {
           </DialogContent>
         </Dialog>
       </div>
+      <div className="flex items-center justify-start gap-4 my-4">
+        <p>اختر طريقة عرض البيانات: </p>
+        <Grid3X3
+          onClick={() => setItemsView("grid")}
+          className={cn("w-8 h-8 p-0.5 cursor-pointer rounded-md", itemsView == "grid" && "bg-destructive")} />
+        <Rows3
+          onClick={() => setItemsView("list")}
+          className={cn("w-8 h-8 p-0.5 cursor-pointer rounded-md", itemsView == "list" && "bg-destructive")} />
+      </div>
       {isloading && <SpinnerLoader />}
 
-      {!isloading && workers.length !== 0 && <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {workers.map((worker) => (
-          <WorkerCard
-            key={worker._id}
-            worker={worker}
-            formData={formData}
-            setFormData={setFormData}
-          />
-        ))}
-      </div>}
+      {!isloading && workers.length !== 0 &&
+
+        itemsView == "grid" ?
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {workers.map((worker) => (
+            <WorkerCard
+              key={worker._id}
+              worker={worker}
+              formData={formData}
+              setFormData={setFormData}
+            />
+          ))}
+        </div>
+        :
+        <div className="flex flex-col gap-4">
+          {workers.map((worker) => (
+            <WorkerList
+              key={worker._id}
+              worker={worker}
+              formData={formData}
+              setFormData={setFormData}
+            />
+          ))}
+        </div>
+      }
 
       {!isloading && workers.length === 0 && (
         <Card>

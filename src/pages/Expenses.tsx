@@ -21,6 +21,9 @@ import { JobExpense, WorkerExpense } from "@/types/SharedTypes";
 import EmptyData from "@/components/EmptyData";
 import WorkerExpensesCard from "@/components/WorkerExpensesCard";
 import JobExpensesCard from "@/components/JobExpensesCard";
+import CustomDayPicker from "@/components/CustomDayPicker";
+import { Skeleton } from "@/components/ui/skeleton";
+import SpinnerLoader from "@/components/SpinnerLoader";
 
 
 // Mock workers data
@@ -49,6 +52,7 @@ export default function Expenses() {
   const [totalWorkerExpenses, setTotalWorkerExpenses] = useState<number>(0)
   const [totalJobExpenses, setTotalJobExpenses] = useState<number>(0)
   const [loadingAddExpenses, setLoadingAddExpenses] = useState<boolean>(false);
+  const [isLoadingInitialData, setIsLoadingInitialData] = useState<boolean>(true);
   const [workerExpenses, setWorkerExpenses] = useState<WorkerExpense[]>([]);
   const [isJobDialogOpen, setIsJobDialogOpen] = useState(false);
   const [isWorkerDialogOpen, setIsWorkerDialogOpen] = useState(false);
@@ -78,6 +82,7 @@ export default function Expenses() {
   useEffect(() => {
     if (existWorkers) {
       setWorkers(existWorkers.workers);
+
     }
     if (getAllJobExpenses) {
       setJobExpenses(getAllJobExpenses.expenses);
@@ -88,6 +93,9 @@ export default function Expenses() {
       setWorkerExpenses(getAllWorkerExpenses.expenses);
       const total = getAllWorkerExpenses.expenses.reduce((sum, expense) => sum + expense.amount, 0);
       setTotalWorkerExpenses(total)
+    }
+    if (existWorkers && getAllJobExpenses && getAllWorkerExpenses) {
+      setIsLoadingInitialData(false)
     }
   }, [existWorkers, getAllJobExpenses, getAllWorkerExpenses])
   const resetJobForm = () => {
@@ -220,9 +228,14 @@ export default function Expenses() {
             <CardTitle className="text-sm font-medium text-muted-foreground">إجمالي مصروفات العمال</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-red-600">
-              {totalWorkerExpenses.toLocaleString('ar-SA')} ر.س
-            </div>
+            {isLoadingInitialData
+              ?
+              <Skeleton className="w-1/3 mt-4 h-8 bg-destructive animate-bounce" />
+              :
+              <div className="text-2xl mt-4 font-bold text-red-600">
+                {totalWorkerExpenses.toLocaleString('ar-SA')} ر.س
+              </div>
+            }
           </CardContent>
           <MousePointerClick
             className="absolute rotate-90 left-0 top-4 text-destructive"
@@ -240,9 +253,14 @@ export default function Expenses() {
             <CardTitle className="text-sm font-medium text-muted-foreground">إجمالي مصروفات العمل</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-red-600">
-              {totalJobExpenses.toLocaleString('ar-SA')} ر.س
-            </div>
+            {isLoadingInitialData
+              ?
+              <Skeleton className="w-1/3 mt-4 h-8 bg-destructive animate-bounce" />
+              :
+              <div className="text-2xl font-bold text-red-600">
+                {totalJobExpenses.toLocaleString('ar-SA')} ر.س
+              </div>
+            }
           </CardContent>
           <MousePointerClick
             className="absolute rotate-90 left-0 top-4 text-destructive"
@@ -348,12 +366,9 @@ export default function Expenses() {
                           </Button>
                         </PopoverTrigger>
                         <PopoverContent className="w-auto p-0" align="start">
-                          <Calendar
-                            mode="single"
-                            selected={jobFormData.date}
-                            onSelect={(date) => date && setJobFormData({ ...jobFormData, date })}
-                            // initialFocus={true}
-                            className="pointer-events-auto"
+                          <CustomDayPicker
+                            OnSelectFn={(date) => date && setJobFormData({ ...jobFormData, date })}
+                            selectedDate={jobFormData.date}
                           />
                         </PopoverContent>
                       </Popover>
@@ -372,10 +387,8 @@ export default function Expenses() {
             </Dialog>
           </div>
           <hr className='w-full' />
-
-          {!jobExpenses.length &&
-            <EmptyData />
-          }
+          {isLoadingInitialData && <SpinnerLoader />}
+          {!jobExpenses.length && !isLoadingInitialData && <EmptyData />}
           {/* <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"> */}
           <div className="flex flex-wrap justify-center items-center  flex-row-reverse gap-4">
             {jobExpenses.map(expense => <JobExpensesCard expense={expense} key={expense._id} />)}
@@ -481,13 +494,11 @@ export default function Expenses() {
                           </Button>
                         </PopoverTrigger>
                         <PopoverContent className="w-auto p-0" align="start">
-                          <Calendar
-                            mode="single"
-                            selected={workerFormData.date}
-                            onSelect={(date) => date && setWorkerFormData({ ...workerFormData, date })}
-                            initialFocus
-                            className="pointer-events-auto"
+                          <CustomDayPicker
+                            OnSelectFn={(date) => date && setWorkerFormData({ ...workerFormData, date })}
+                            selectedDate={workerFormData.date}
                           />
+
                         </PopoverContent>
                       </Popover>
                     </div>
@@ -508,7 +519,8 @@ export default function Expenses() {
           </div>
 
           <hr className='w-full' />
-          {!workerExpenses.length && <EmptyData />}
+          {isLoadingInitialData && <SpinnerLoader />}
+          {!workerExpenses.length && !isLoadingInitialData && <EmptyData />}
           {/* <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"> */}
           <div className="flex flex-wrap justify-center items-center  flex-row-reverse gap-4">
             {workerExpenses.map(expense => <WorkerExpensesCard expense={expense} key={expense._id} />)}

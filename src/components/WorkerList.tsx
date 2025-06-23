@@ -23,7 +23,7 @@ interface Props {
   formData: WorkerType,
   setFormData: React.Dispatch<React.SetStateAction<WorkerType | null>>,
 }
-const WorkerCard = ({ worker, setFormData, formData }: Props) => {
+const WorkerList = ({ worker, setFormData, formData }: Props) => {
   const publishWorkerState = useMutation(api.worker.publishWorker);
   const deleteWorker = useMutation(api.worker.deleteWorker);
   const updateWorkerInfo = useMutation(api.worker.updateWorker);
@@ -85,10 +85,8 @@ const WorkerCard = ({ worker, setFormData, formData }: Props) => {
       .finally(() => {
         setIsEditingWorker(false);
       })
+
   };
-  const handletogglePublished = (id: string) => {
-    togglePublished(id)
-  }
 
   return (
 
@@ -195,6 +193,7 @@ const WorkerCard = ({ worker, setFormData, formData }: Props) => {
               </form>
             </DialogContent>
           </Dialog>
+
           <Badge
             variant={worker.type === "صنايعي" ? "default" : "secondary"}
             className={cn("text-white", worker.type === "صنايعي" ? "bg-orange-700" : "bg-green-700")}
@@ -213,21 +212,18 @@ const WorkerCard = ({ worker, setFormData, formData }: Props) => {
             📞 {worker.phone}
           </div>
         )}
+        <p className='bg-red-800 w-full p-4 rounded-xl'>{worker.note}</p>
 
-
-        <div className='flex items-start  py-4 flex-col gap-2'>
-          <p>ملاحظة عن هذا العامل</p>
-          <p className='bg-red-800 w-full p-4 rounded-xl'> ملاحظة:{worker.note}</p>
-        </div>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Switch
+
               dir='ltr'
               checked={worker.isPublished}
-              onCheckedChange={() => handletogglePublished(worker._id)}
+              onCheckedChange={() => togglePublished(worker._id)}
             />
             <span className="text-xs text-muted-foreground">
-              الملخص {worker.isPublished ? "عام" : "خاص"}
+              ملخص {worker.isPublished ? "عام" : "خاص"}
             </span>
           </div>
         </div>
@@ -274,11 +270,9 @@ const WorkerCard = ({ worker, setFormData, formData }: Props) => {
 
         {worker.isPublished && (
           <div className="text-xs text-muted-foreground pt-1">
-            <p>🔗 الملخص الحساب:</p>
+            <p>🔗 ملخص الحساب:</p>
             <div className='m-4 p-2 rounded-xl grid grid-cols-12 items-center justify-between border-secondary border-2'>
               <p className='col-span-2 cursor-pointer'>
-
-
                 <Tooltip delayDuration={0}  >
                   <TooltipTrigger>
                     <Copy onClick={() => handleCopy(worker._id)} />
@@ -289,7 +283,7 @@ const WorkerCard = ({ worker, setFormData, formData }: Props) => {
                 </Tooltip>
                 {/* {`name = ${worker.name}`} */}
               </p>
-              <span className='col-span-10 truncate'>
+              <span className='col-span-10 truncate text-end'>
                 {`${location.origin}/worker-summary/${worker._id}`}
               </span>
             </div>
@@ -302,4 +296,4 @@ const WorkerCard = ({ worker, setFormData, formData }: Props) => {
   )
 }
 
-export default WorkerCard
+export default WorkerList

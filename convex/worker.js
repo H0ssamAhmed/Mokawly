@@ -8,9 +8,10 @@ export const addWorker = mutation({
     type: v.string(),
     dailyWage: v.number(),
     isPublished: v.boolean(),
+    note: v.optional(v.string()),
   },
-  handler: async (ctx, { name, phone, type, dailyWage, isPublished }) => {
-    const workerId = await ctx.db.insert("worker", { name, phone, type, dailyWage, isPublished });
+  handler: async (ctx, { name, phone, type, dailyWage, isPublished, note }) => {
+    const workerId = await ctx.db.insert("worker", { name, phone, type, dailyWage, isPublished, note });
     const worker = await ctx.db.get(workerId);
     return { ok: true, worker };
   },
@@ -45,6 +46,8 @@ export const updateWorker = mutation({
     type: v.optional(v.string()),
     dailyWage: v.optional(v.number()),
     isPublished: v.optional(v.boolean()),
+    note: v.optional(v.string()),
+
   },
   handler: async (ctx, { id, ...updates }) => {
     const existingWorker = await ctx.db.get(id);
