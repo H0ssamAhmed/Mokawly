@@ -4,9 +4,16 @@ export interface WorkerType {
   phone?: string | null;
   type: "عامل" | "صنايعي";
   dailyWage: number;
+  note?: string;
   isPublished: boolean;
   _creationTime?: number;
-  note?: string
+}
+export interface DilayAttendance {
+  workerId: string,
+  name: string,
+  dailyWage: number,
+  date: string,
+  note: string
 }
 
 export interface JobExpense {

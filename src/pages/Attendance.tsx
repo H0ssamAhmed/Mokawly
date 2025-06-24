@@ -25,13 +25,15 @@ interface AttendanceRecord {
 
 import { api } from '../../convex/_generated/api';
 import { useMutation, useQuery } from "convex/react";
-import { WorkerType } from "@/types/SharedTypes";
+import { DilayAttendance, WorkerType } from "@/types/SharedTypes";
 import { Badge } from "@/components/ui/badge";
 import { DayPicker } from "react-day-picker";
 import { ar } from "date-fns/locale";
 import CustomDayPicker from "@/components/CustomDayPicker";
 import CardSkeleton from "@/components/CardSkeleton";
 import SpinnerLoader from "@/components/SpinnerLoader";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 export default function Attendance() {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [presentWorkers, setPresentWorkers] = useState<string[]>([]);
@@ -39,7 +41,7 @@ export default function Attendance() {
   const saveDailyAttendances = useMutation(api.attendance.saveAttendances);
   const [loading, setLoading] = useState<boolean>(true);
   const [workers, setWorkers] = useState<WorkerType[]>([])
-  const [attendanceWorkersInfo, setAttendanceWorkersInfo] = useState<WorkerType[]>([])
+  const [dialynote, setDialynote] = useState<string>("")
 
   // Mock workers data
   useEffect(() => {
@@ -65,7 +67,7 @@ export default function Attendance() {
   ]);
 
   const toggleWorkerAttendance = (workerId: string, worker: WorkerType) => {
-    setAttendanceWorkersInfo(prev => prev.includes(worker) ? prev.filter(w => w._id !== worker._id) : [...prev, worker])
+    //  setAttendanceWorkersInfo(prev => prev.includes(worker) ? prev.filter(w => w._id !== worker._id) : [...prev, worker])
 
     setPresentWorkers(prev =>
       prev.includes(workerId)
@@ -98,14 +100,15 @@ export default function Attendance() {
 
 
 
-    const attendancedata: { workerId: string, name: string, dailyWage: number, date: string }[] = []
+    const attendancedata: DilayAttendance[] = []
     workers.filter((worker) => {
       if (presentWorkers.includes(worker._id)) {
         attendancedata.push({
           workerId: worker._id,
           name: worker.name,
           dailyWage: worker.dailyWage,
-          date: dateString
+          date: dateString,
+          note: dialynote
         })
       }
     })
@@ -113,7 +116,7 @@ export default function Attendance() {
       .then((res) => {
         console.log(res);
       }).catch((err) => {
-        console.log(err);
+        console.error(err);
       })
 
 
@@ -135,7 +138,7 @@ export default function Attendance() {
             <CardHeader>
               <CardTitle>اختيار التاريخ</CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="flex flex-col gap-4">
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
@@ -162,6 +165,12 @@ export default function Attendance() {
                   />
                 </PopoverContent>
               </Popover>
+              <div>
+                <Label htmlFor="note" className="text-xl block py-4" >ملاحظات لليوم </Label>
+                <Textarea
+                  onChange={(e) => setDialynote(e.target.value)}
+                  value={dialynote} id="note" placeholder="ملاحظات عن الحضور مثال: حساب نصف يوم للكل" />
+              </div>
             </CardContent>
           </Card>
 

@@ -10,47 +10,13 @@ export const saveAttendances = mutation({
         name: v.string(),        // optional if you store name separately
         dailyWage: v.number(),
         date: v.string(),
+        note: v.optional(v.string()),
       })
     ),
   },
   handler: async (ctx, { records }) => {
-    const insertedIds = [];
-
-
     for (const record of records) {
-      const { name, dailyWage, workerId, date } = record;
-
-
       const recordId = await ctx.db.insert("attendance", record)
-      console.log(recordId);
-
-      const AddedRecord = await ctx.db.query("worker")
-        .filter((q) => q.eq(q.field("id"), recordId)).first()
-      console.log(AddedRecord);
-
-
-      // Check if attendance for this worker on that date already exists
-      // const existing = await ctx.db
-      //   .query("attendance")
-      //   .withIndex("by_worker_date", (q) =>
-      //     q.eq("workerId", workerId).eq("date", date)
-      //   )
-      //   .first();
-
-      // if (existing) {
-      //   await ctx.db.patch(existing._id, {
-      //     dailyWage: record.dailyWage,
-      //   });
-      //   insertedIds.push(existing._id);
-      // } else {
-      //   const id = await ctx.db.insert("attendance", {
-      //     workerId: record.workerId,
-      //     date: record.date,
-      //     dailyWage: record.dailyWage,
-      //     createdAt: Date.now(),
-      //   });  
-      //   insertedIds.push(id);
-      // }
     }
 
     return {
