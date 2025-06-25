@@ -90,7 +90,6 @@ export default function Workers() {
           }
         });
       }).finally(() => {
-
         setIsloading(false);
         setIsDialogOpen(false);
       })

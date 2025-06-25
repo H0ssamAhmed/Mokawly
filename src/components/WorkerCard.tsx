@@ -215,10 +215,12 @@ const WorkerCard = ({ worker, setFormData, formData }: Props) => {
         )}
 
 
-        <div className='flex items-start  py-4 flex-col gap-2'>
-          <p>ملاحظة عن هذا العامل</p>
-          <p className='bg-red-800 w-full p-4 rounded-xl'> ملاحظة:{worker.note}</p>
-        </div>
+        {worker.note && (
+          <div className='flex items-start  py-4 flex-col gap-2'>
+            <p>ملاحظة عن هذا العامل</p>
+            <p className='bg-red-800 w-full p-4 rounded-xl'>{worker.note}</p>
+          </div>
+        )}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Switch
