@@ -7,25 +7,9 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { format } from "date-fns";
 import { CalendarIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { toast } from "@/hooks/use-toast";
-
-interface Worker {
-  id: string;
-  name: string;
-  dailyWage: number;
-  type: "عامل" | "حرفي";
-}
-
-interface AttendanceRecord {
-  id: string;
-  date: string;
-  presentWorkers: string[];
-  totalWages: number;
-}
-
 import { api } from '../../convex/_generated/api';
 import { useMutation, useQuery } from "convex/react";
-import { DilayAttendance, WorkerType } from "@/types/SharedTypes";
+import { AttendanceRecord, DilayAttendance, WorkerType } from "@/types/SharedTypes";
 import { Badge } from "@/components/ui/badge";
 import { DayPicker } from "react-day-picker";
 import { ar } from "date-fns/locale";
@@ -34,37 +18,35 @@ import CardSkeleton from "@/components/CardSkeleton";
 import SpinnerLoader from "@/components/SpinnerLoader";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import toast from "react-hot-toast";
+import { useIsMobile } from "@/hooks/use-mobile";
 export default function Attendance() {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [presentWorkers, setPresentWorkers] = useState<string[]>([]);
   const getAllWorkers = useQuery(api.worker.getWorkers);
+  const getAllattendances = useQuery(api.attendance.getAttendanceRecords);
   const saveDailyAttendances = useMutation(api.attendance.saveAttendances);
   const [loading, setLoading] = useState<boolean>(true);
+  const [isAdding, setIsAdding] = useState<boolean>(false);
   const [workers, setWorkers] = useState<WorkerType[]>([])
   const [dialynote, setDialynote] = useState<string>("")
+  const [attendanceRecords, setAttendanceRecords] = useState<AttendanceRecord[]>([]);
+  const isMobile = useIsMobile()
 
   // Mock workers data
   useEffect(() => {
     if (getAllWorkers) {
       setWorkers(getAllWorkers.workers);
+    }
+    if (getAllattendances) {
+      setAttendanceRecords(getAllattendances.records);
+    }
+    if (getAllWorkers && getAllattendances) {
+      console.log(getAllattendances.records)
       setLoading(false);
     }
-  }, [getAllWorkers])
+  }, [getAllWorkers, getAllattendances])
   // Mock attendance records
-  const [attendanceRecords, setAttendanceRecords] = useState<AttendanceRecord[]>([
-    {
-      id: "1",
-      date: "2024-12-15",
-      presentWorkers: ["1", "2", "3", "4", "5"],
-      totalWages: 1330,
-    },
-    {
-      id: "2",
-      date: "2024-12-14",
-      presentWorkers: ["1", "3", "4", "5"],
-      totalWages: 1080,
-    },
-  ]);
 
   const toggleWorkerAttendance = (workerId: string, worker: WorkerType) => {
     //  setAttendanceWorkersInfo(prev => prev.includes(worker) ? prev.filter(w => w._id !== worker._id) : [...prev, worker])
@@ -86,19 +68,8 @@ export default function Attendance() {
   };
 
   const saveAttendance = () => {
-    if (presentWorkers.length === 0) {
-      toast({
-        title: "خطأ",
-        description: "الرجاء اختيار عامل واحد على الأقل",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    const totalWages = calculateTotalWages();
+    setIsAdding(true)
     const dateString = format(selectedDate, "yyyy-MM-dd");
-
-
 
     const attendancedata: DilayAttendance[] = []
     workers.filter((worker) => {
@@ -112,18 +83,34 @@ export default function Attendance() {
         })
       }
     })
+
     saveDailyAttendances({ records: attendancedata })
-      .then((res) => {
-        console.log(res);
+      .then((res: { ok: boolean; message: string; records: string[] }) => {
+        if (res.ok) {
+          const completedMessage = <p className="px">{res.message} <br />{format(selectedDate, "EEEE", { locale: ar })} -  {format(selectedDate, "dd/MM/yyyy")}</p>
+          toast.success(completedMessage, {
+            icon: "✅",
+            duration: 9000,
+            style: {
+              width: "100%"
+            }
+          })
+          resetForm()
+
+        }
       }).catch((err) => {
-        console.error(err);
+        toast.error("حدث خطأ ما يرجى المحاولة مرة اخرى", { icon: "❌", duration: 5000 })
+      }).finally(() => {
+        setIsAdding(false)
       })
-
-
   };
+  const resetForm = () => {
+    setDialynote("")
+    setPresentWorkers([])
+    setSelectedDate(new Date())
+  }
 
-  // Get existing attendance for selected date
-  const existingAttendance = attendanceRecords.find(r => r.date === format(selectedDate, "yyyy-MM-dd"));
+
 
   return (
     <div className="p-4 lg:p-6 space-y-6" dir="rtl">
@@ -179,11 +166,6 @@ export default function Attendance() {
               <CardTitle>
                 تسجيل حضور العمال - {format(selectedDate, "EEEE", { locale: ar })}-  {format(selectedDate, "dd/MM/yyyy")}
               </CardTitle>
-              {existingAttendance && (
-                <p className="text-sm text-muted-foreground">
-                  يوجد سجل موجود. قم بتحديث الحضور أدناه.
-                </p>
-              )}
             </CardHeader>
             <CardContent className="space-y-4">
               {loading && <SpinnerLoader />}
@@ -251,24 +233,33 @@ export default function Attendance() {
             <CardHeader>
               <CardTitle>سجلات حديثة</CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {attendanceRecords
-                  .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-                  .slice(0, 5)
-                  .map((record) => (
-                    <div key={record.id} className="flex justify-between items-center py-2 border-b last:border-0">
-                      <div>
-                        <p className="font-medium">
-                          {format(new Date(record.date), "dd/MM")}
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          {record.presentWorkers.length} عامل
-                        </p>
-                      </div>
-                      <span className="font-semibold">{record.totalWages.toLocaleString('ar-SA')} ر.س</span>
+            <CardContent className="px-0">
+              <div className={cn("space-y-3 px-4", !isMobile && "overflow-y-scroll h-fit max-h-60")}>
+                {loading && !isAdding && <SpinnerLoader />}
+                {isAdding && <>
+                  <SpinnerLoader parentClassName="h-fit" />
+                  <p className="text-sm text-center text-muted-foreground">جاري الحفظ...</p>
+                </>}
+                {!loading && !isAdding && !attendanceRecords.length && <p className="text-sm text-center  text-muted-foreground">لا يوجد سجلات حديثة</p>}
+                {!loading && !isAdding && attendanceRecords?.map((record) => (
+                  <div key={record._id} className="flex justify-between items-center py-2 border-b last:border-0">
+                    <div>
+                      <p className="font-medium">
+                        <span className="font-bold block">
+                          {record.name}
+                        </span>
+                        <span className="text-muted-foreground">
+                          {format(new Date(record.date), "dd/MM/yyyy")}
+                        </span>
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+
+                      </p>
                     </div>
-                  ))}
+                    <span className="font-semibold">{record.dailyWage.toLocaleString('ar-SA')} ر.س</span>
+                  </div>
+                )
+                )}
               </div>
             </CardContent>
           </Card>

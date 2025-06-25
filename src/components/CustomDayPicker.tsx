@@ -7,7 +7,7 @@ import { DayPicker } from "react-day-picker";
 
 const CustomDayPicker = ({ OnSelectFn, selectedDate }) => {
   return (
-    <div dir="rtl" className="w-fit rounded-lg border p-2 shadow-sm bg-white">
+    <div dir="rtl" className="w-fit rounded-lg border p-2 shadow-sm">
       <DayPicker
         mode="single"
         selected={selectedDate}

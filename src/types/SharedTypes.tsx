@@ -38,3 +38,19 @@ export interface WorkerExpense {
   _creationTime?: number;
 
 }
+export interface Worker {
+  id: string;
+  name: string;
+  dailyWage: number;
+  type: "عامل" | "حرفي";
+}
+
+export interface AttendanceRecord {
+  _id: string;
+  name: string;
+  dailyWage: number;
+  date: string;
+  note?: string;
+  workerId: number;
+  _creationTime: number;
+}

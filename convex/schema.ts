@@ -16,6 +16,7 @@ export default defineSchema({
     date: v.string(),
     name: v.string(),
     dailyWage: v.number(),
+    note: v.optional(v.string()),
   }).index("by_workerId", ["workerId"])
     .index("by_date", ["date"]),
 

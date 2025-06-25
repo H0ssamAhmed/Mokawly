@@ -15,13 +15,23 @@ export const saveAttendances = mutation({
     ),
   },
   handler: async (ctx, { records }) => {
+    console.log(records);
+    let totalIds = []
+
     for (const record of records) {
-      const recordId = await ctx.db.insert("attendance", record)
+      const insertedRecsId = await ctx.db.insert("attendance", record)
     }
+
+    // console.log(totalIds.length);
+    // console.log(records);
+
+
+
 
     return {
       ok: true,
-      message: "Attendance records saved successfully",
+      message: "تم حفظ حضور اليوم بنجاح",
+      records: records
 
     };
   },
@@ -31,15 +41,43 @@ export const saveAttendances = mutation({
 // Get all attendance records
 export const getAttendanceRecords = query({
   args: {},
+
   handler: async (ctx) => {
     const records = await ctx.db
       .query("attendance")
-      .withIndex("workerId")
-      .order("desc")
       .collect();
+    return {
+      ok: true,
+      records
+    };
 
-    return records;
   },
+  // This if i want to get today and yestday attendance
+  // args: {},
+
+  // handler: async (ctx) => {
+  //   const today = new Date();
+  //   const todayISO = today.toISOString().slice(0, 10);
+
+  //   const yesterday = new Date();
+  //   yesterday.setDate(today.getDate() - 1);
+  //   const yesterdayISO = yesterday.toISOString().slice(0, 10);
+
+  //   const recordsToday = await ctx.db
+  //     .query("attendance")
+  //     .withIndex("by_date", (q) => q.eq("date", todayISO))
+  //     .collect();
+
+  //   const recordsYesterday = await ctx.db
+  //     .query("attendance")
+  //     .withIndex("by_date", (q) => q.eq("date", yesterdayISO))
+  //     .collect();
+
+  //   return {
+  //     ok: true,
+  //     records: [...recordsToday, ...recordsYesterday],
+  //   };
+  // },
 });
 
 // Get attendance for a specific date

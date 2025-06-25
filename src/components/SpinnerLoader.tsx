@@ -1,10 +1,14 @@
+import { cn } from '@/lib/utils'
 import { Loader2 } from 'lucide-react'
 import React from 'react'
-
-const SpinnerLoader = () => {
+interface Props {
+  parentClassName?: string
+  className?: string
+}
+const SpinnerLoader = ({ className, parentClassName }: Props) => {
   return (
-    <div className='h-52'>
-      <Loader2 className="animate-spin mx-auto my-5 block" size={100} />
+    <div className={cn('h-52', parentClassName)}>
+      <Loader2 className={cn("animate-spin mx-auto my-5 block", className)} size={100} />
     </div>
   )
 }
