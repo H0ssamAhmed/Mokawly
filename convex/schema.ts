@@ -27,7 +27,7 @@ export default defineSchema({
     amount: v.number(),
     date: v.string(),
     description: v.optional(v.string()),
-  }),
+  }).index("by_workerId", ["workerId"]),
 
   jobExpense: defineTable({
     type: v.string(),

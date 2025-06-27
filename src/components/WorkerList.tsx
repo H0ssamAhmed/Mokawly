@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-
+import { Link } from 'react-router-dom'
 import { Button } from './ui/button'
 import { useMutation } from 'convex/react'
 import { api } from '../../convex/_generated/api';
@@ -18,6 +18,7 @@ import { toast } from 'sonner'
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip'
 import ReqiureInputSgin from './ReqiureInputSgin'
 import { Textarea } from './ui/textarea'
+import CustomBadge from './CustomBadge'
 interface Props {
   worker: WorkerType,
   formData: WorkerType,
@@ -51,7 +52,7 @@ const WorkerList = ({ worker, setFormData, formData }: Props) => {
   };
 
   const handleCopy = async (id: string) => {
-    const url = `${location.origin}/worker-summary/${worker._id}?name=${worker.name}&type=${worker.type}`
+    const url = `${location.origin}/Public-summary-worker/${worker._id}`
     setIsUrlCopied(false);
     try {
       await navigator.clipboard.writeText(url);
@@ -176,8 +177,8 @@ const WorkerList = ({ worker, setFormData, formData }: Props) => {
                   />
                   <Label htmlFor="isPublished">السماح بالوصول لصفحة الملخص</Label>
                 </div>
-
                 <div className="flex gap-2 pt-4">
+
                   <Button
                     type="button"
                     variant="outline"
@@ -194,12 +195,7 @@ const WorkerList = ({ worker, setFormData, formData }: Props) => {
             </DialogContent>
           </Dialog>
 
-          <Badge
-            variant={worker.type === "صنايعي" ? "default" : "secondary"}
-            className={cn("text-white", worker.type === "صنايعي" ? "bg-orange-700" : "bg-green-700")}
-          >
-            {worker.type}
-          </Badge>
+          <CustomBadge type={worker.type} />
         </div>
       </CardHeader>
       <CardContent className="space-y-3">
@@ -215,7 +211,7 @@ const WorkerList = ({ worker, setFormData, formData }: Props) => {
         {worker.note && (
           <div className='flex items-start  py-4 flex-col gap-2'>
             <p>ملاحظة عن هذا العامل</p>
-            <p className='bg-red-800 w-full p-4 rounded-xl'>{worker.note}</p>
+            <p className='bg-green-300 text-black w-full p-4 rounded-xl'>{worker.note}</p>
           </div>
         )}
 
@@ -228,12 +224,12 @@ const WorkerList = ({ worker, setFormData, formData }: Props) => {
               onCheckedChange={() => togglePublished(worker._id)}
             />
             <span className="text-xs text-muted-foreground">
-              ملخص {worker.isPublished ? "عام" : "خاص"}
+              ملخص {worker.isPublished ? "منشور" : "خاص"}
             </span>
           </div>
         </div>
 
-        <div className="flex gap-2 pt-2">
+        <div className="flex gap-2 pt-2   flex-wrap">
           <Button
             variant="outline"
             size="sm"
@@ -243,6 +239,7 @@ const WorkerList = ({ worker, setFormData, formData }: Props) => {
             <Edit className="mr-1 h-3 w-3" />
             تعديل
           </Button>
+
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <Button
@@ -270,30 +267,29 @@ const WorkerList = ({ worker, setFormData, formData }: Props) => {
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
+          <Button variant='outline' className='flex-1'>
 
+            <Link to={`${location.origin}/summary-worker/${worker._id}`}>ملخص حساب {worker.name}</Link>
+          </Button>
         </div>
 
         {worker.isPublished && (
           <div className="text-xs text-muted-foreground pt-1">
-            <p>🔗 ملخص الحساب:</p>
+            <p>🔗 الملخص الحساب:</p>
             <div className='m-4 p-2 rounded-xl grid grid-cols-12 items-center justify-between border-secondary border-2'>
               <p className='col-span-2 cursor-pointer'>
                 <Tooltip delayDuration={0}  >
                   <TooltipTrigger>
                     <Copy onClick={() => handleCopy(worker._id)} />
-
                   </TooltipTrigger>
                   <TooltipContent className='col-span-2 cursor-pointer'>نسخ الرابط</TooltipContent>
-
                 </Tooltip>
-                {/* {`name = ${worker.name}`} */}
               </p>
-              <span className='col-span-10 truncate text-end'>
-                {`${location.origin}/worker-summary/${worker._id}`}
+              <span className='col-span-10 truncate'>
+                {`${location.origin}/Public-summary-worker/${worker._id}`}
               </span>
             </div>
             <p className={cn('text-green-600 opacity-0', isUrlCopied && 'opacity-100 animate-scale-in')}>✅ تم نسخ رابط ملخص الحساب بنجاح يمكن ارساله لما تريد </p>
-
           </div>
         )}
       </CardContent>

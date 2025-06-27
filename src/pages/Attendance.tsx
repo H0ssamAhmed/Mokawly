@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -20,6 +19,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import toast from "react-hot-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
+import CustomBadge from "@/components/CustomBadge";
 export default function Attendance() {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [presentWorkers, setPresentWorkers] = useState<string[]>([]);
@@ -42,7 +42,6 @@ export default function Attendance() {
       setAttendanceRecords(getAllattendances.records);
     }
     if (getAllWorkers && getAllattendances) {
-      console.log(getAllattendances.records)
       setLoading(false);
     }
   }, [getAllWorkers, getAllattendances])
@@ -181,12 +180,7 @@ export default function Attendance() {
                       <label htmlFor={worker._id} className="font-medium cursor-pointer">
                         {worker.name}
                       </label>
-                      <Badge
-                        variant={worker.type === "صنايعي" ? "default" : "secondary"}
-                        className={cn("text-white mx-4", worker.type === "صنايعي" ? "bg-orange-700" : "bg-green-700")}
-                      >
-                        {worker.type}
-                      </Badge>
+                      <CustomBadge type={worker.type} />
                     </div>
                   </div>
                   <div className="text-left">

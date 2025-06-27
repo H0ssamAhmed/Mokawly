@@ -17,12 +17,7 @@ const WorkerAttendanceCard = ({ worker, presentWorkers }: Props) => {
           <label htmlFor={worker._id} className="font-medium cursor-pointer">
             {worker.name}
           </label>
-          <Badge
-            variant={worker.type === "صنايعي" ? "default" : "secondary"}
-            className={cn("text-white mx-4", worker.type === "صنايعي" ? "bg-orange-700" : "bg-green-700")}
-          >
-            {worker.type}
-          </Badge>
+         <Cu
         </div>
       </div>
       <div className="text-left">

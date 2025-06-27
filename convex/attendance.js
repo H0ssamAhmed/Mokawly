@@ -15,7 +15,7 @@ export const saveAttendances = mutation({
     ),
   },
   handler: async (ctx, { records }) => {
-    console.log(records);
+    // console.log(records);
     let totalIds = []
 
     for (const record of records) {

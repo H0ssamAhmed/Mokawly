@@ -1,6 +1,6 @@
 
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
 import { ThemeProvider } from "@/components/theme-provider";
 import { AuthProvider } from "@/components/auth-provider";
 import ProtectedRoute from "@/components/protected-route";
@@ -16,6 +16,8 @@ import WorkerSummary from "./pages/WorkerSummary";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 import { Toaster } from "react-hot-toast";
+import SummaryWorker from "./pages/SummaryWorker";
+import PublicSummaryWorker from "./pages/PublicSummaryWorker";
 
 const App = () => (
 
@@ -75,6 +77,14 @@ const App = () => (
               </Layout>
             </ProtectedRoute>
           } />
+          <Route path="/summary-worker/:id" element={
+            <ProtectedRoute>
+              <Layout>
+                <SummaryWorker />
+              </Layout>
+            </ProtectedRoute>
+          } />
+          <Route path="/Public-summary-worker/:id" element={<PublicSummaryWorker />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

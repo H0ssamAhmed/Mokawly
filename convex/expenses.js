@@ -58,7 +58,6 @@ export const deleteWorkerExpense = mutation({
   args: { id: v.id("workerExpense") },
   handler: async (ctx, { id }) => {
     const deletedId = await ctx.db.delete(id);
-    console.log(deletedId);
     return { ok: true, message: "تم حذف المصروف بنجاح" };
   },
 });
@@ -81,8 +80,6 @@ export const deleteJobExpense = mutation({
   args: { id: v.id("jobExpense") },
   handler: async (ctx, { id }) => {
     const deletedId = await ctx.db.delete(id);
-    console.log(deletedId);
-
     return { ok: true, message: "تم حذف المصروف بنجاح" };
   },
 })

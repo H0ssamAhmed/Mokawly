@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -59,7 +58,6 @@ export default function Workers() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name || !formData.dailyWage) {
-      console.log("error");
       return;
     }
     const workerData: WorkerType = {
@@ -205,10 +203,10 @@ export default function Workers() {
         <p>اختر طريقة عرض البيانات: </p>
         <Grid3X3
           onClick={() => setItemsView("grid")}
-          className={cn("w-8 h-8 p-0.5 cursor-pointer rounded-md", itemsView == "grid" && "bg-destructive")} />
+          className={cn("w-8 h-8 p-1 cursor-pointer rounded-sm", itemsView == "grid" && "bg-primary dark:text-black text-white")} />
         <Rows3
           onClick={() => setItemsView("list")}
-          className={cn("w-8 h-8 p-0.5 cursor-pointer rounded-md", itemsView == "list" && "bg-destructive")} />
+          className={cn("w-8 h-8 p-1 cursor-pointer rounded-sm", itemsView == "list" && "bg-primary dark:text-black text-white")} />
       </div>
       {isloading && <SpinnerLoader />}
 

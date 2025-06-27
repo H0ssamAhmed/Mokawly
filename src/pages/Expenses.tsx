@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -141,17 +140,12 @@ export default function Expenses() {
     };
     setLoadingAddExpenses(true);
     addNewJobExpense(newExpense)
-      .then((res) => {
-        console.log(res);
-
-        const type = res.expense.type
-        toast.success(<h1>تم اضافة حساب   <b>{" " + type + " "} </b>  بنجاح</h1>, {
+      .then(() => {
+        toast.success(<h1>تم اضافة حساب   <b>{" " + jobFormData.type + " "} </b>  بنجاح</h1>, {
           icon: "✅",
           duration: 3000,
         });
       }).catch((error) => {
-        console.log(error);
-
         toast.error(<h1>حدث خطأ, {error.message}</h1>, {
           icon: "❌",
           duration: 3000,
@@ -188,9 +182,8 @@ export default function Expenses() {
     };
     setLoadingAddExpenses(true);
     addNewWorkerExpense(newExpense)
-      .then((res) => {
-        const name = res.workerExpense.workerName
-        toast.success(<h1>تم اضافة المصروف  بإسم  <b>{" " + name + " "} </b>  بنجاح</h1>, {
+      .then(() => {
+        toast.success(<h1>تم اضافة المصروف  بإسم  <b>{" " + workerFormData.workerName + " "} </b>  بنجاح</h1>, {
           icon: "✅",
           duration: 3000,
         });

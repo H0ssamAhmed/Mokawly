@@ -81,3 +81,83 @@ export const publishWorker = mutation({
     return { ok: true, message: "Worker published successfully" };
   },
 })
+
+export const getWorkerDate = query({
+  args: { id: v.id("worker") }, // تأكد ان اسم الـ table صح
+
+  handler: async (ctx, { id }) => {
+    // Get worker details
+    const worker = await ctx.db.get(id);
+
+    if (!worker) {
+      return { ok: false, error: "Worker not found" };
+    }
+
+    // Get all attendance records for this worker
+    const workerAttendance = await ctx.db
+      .query("attendance")
+      .withIndex("by_workerId", (q) => q.eq("workerId", id))
+      .collect();
+
+    // Get all expenses for this worker
+    const workerExpenses = await ctx.db
+      .query("workerExpense")
+      .withIndex("by_workerId", (q) => q.eq("workerId", id))
+      .collect();
+
+    return {
+      ok: true,
+      worker,
+      attendance: workerAttendance,
+      expenses: workerExpenses,
+    };
+  },
+})
+
+export const getPublicWorkerDate = query({
+  args: { id: v.id("worker") }, // تأكد ان اسم الـ table صح
+
+  handler: async (ctx, { id }) => {
+    // Get worker details
+    const worker = await ctx.db.get(id) || null;
+
+    if (!worker) {
+      return { ok: false, error: "العامل غير موجود" };
+    }
+    if (!worker.isPublished) {
+
+      return {
+        ok: true,
+        isPublished: worker.isPublished,
+        message: "بيانات العامل غير مفتوحة- يرجى التواصل مع احد المسؤليين",
+        data: {
+          worker: null,
+          attendance: [],
+          expenses: [],
+        }
+      }
+    }
+
+    // Get all attendance records for this worker
+    const workerAttendance = await ctx.db
+      .query("attendance")
+      .withIndex("by_workerId", (q) => q.eq("workerId", id))
+      .collect();
+
+    // Get all expenses for this worker
+    const workerExpenses = await ctx.db
+      .query("workerExpense")
+      .withIndex("by_workerId", (q) => q.eq("workerId", id))
+      .collect();
+
+    return {
+      ok: true,
+      isPublished: worker.isPublished,
+      data: {
+        worker,
+        attendance: workerAttendance,
+        expenses: workerExpenses,
+      }
+    };
+  },
+})

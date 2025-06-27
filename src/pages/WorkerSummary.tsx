@@ -1,4 +1,3 @@
-
 import { useParams, useSearchParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { User, Calendar, Home } from "lucide-react";
 import { useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
+import CustomBadge from "@/components/CustomBadge";
 
 interface Worker {
   id: string;
@@ -36,14 +36,9 @@ export default function WorkerSummary() {
   const name = searchParams.get("name");
   const type = searchParams.get("type");
 
-  console.log(name);
-  console.log(type);
-
   const [worker, setWorker] = useState<Worker | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const workerdata = useQuery(api.worker.getWorker, { id: workerId })
-  console.log(workerdata);
-
 
   // Mock data - in real app, this would come from Supabase
   const mockWorkers: Worker[] = [
@@ -67,9 +62,7 @@ export default function WorkerSummary() {
 
   useEffect(() => {
     if (workerdata) {
-      console.log(workerdata);
       setWorker(workerdata.worker);
-      console.log(workerdata);
       setIsLoading(false);
     }
   }, [workerdata]);
@@ -132,9 +125,8 @@ export default function WorkerSummary() {
           <div className="flex items-center gap-3 mb-2">
             <User className="h-6 w-6 text-muted-foreground" />
             <h1 className="text-2xl font-bold">{worker.name}</h1>
-            <Badge variant={worker.type === "Craftsman" ? "default" : "secondary"}>
-              {worker.type}
-            </Badge>
+            <CustomBadge type={worker.type} />
+
           </div>
           <p className="text-sm text-muted-foreground">
             Daily wage: ${worker.dailyWage}
