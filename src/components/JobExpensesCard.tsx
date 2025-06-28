@@ -21,7 +21,6 @@ const JobExpensesCard = ({ expense }) => {
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-2">
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
             <CardTitle className="text-sm">{expense.type}</CardTitle>
           </div>
           <span className="text-lg font-bold text-red-600">
@@ -30,7 +29,8 @@ const JobExpensesCard = ({ expense }) => {
         </div>
       </CardHeader>
       <CardContent>
-        <p className="text-sm text-muted-foreground my-2">
+        <p className="text-sm text-muted-foreground my-2 h-4">
+
           {expense.description}
         </p>
         <div className="flex justify-between items-center mt-5"

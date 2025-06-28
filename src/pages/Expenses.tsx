@@ -326,7 +326,7 @@ export default function Expenses() {
                         value={jobFormData.description}
                         onChange={(e) => setJobFormData({ ...jobFormData, description: e.target.value })}
                         placeholder="وصف المصروف"
-                        required
+
                       />
                     </div>
 

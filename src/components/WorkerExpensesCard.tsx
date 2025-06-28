@@ -23,9 +23,6 @@ const WorkerExpensesCard = ({ expense }: { expense: WorkerExpense }) => {
         <div className="flex items-start justify-between">
           <div>
             <CardTitle className="text-sm">{expense.workerName}</CardTitle>
-            {expense.description && (
-              <p className="text-xs text-muted-foreground">{expense.description}</p>
-            )}
           </div>
           <span className="text-lg font-bold text-red-600">
             {expense.amount.toLocaleString('ar-SA')} ر.س
@@ -33,7 +30,7 @@ const WorkerExpensesCard = ({ expense }: { expense: WorkerExpense }) => {
         </div>
       </CardHeader>
       <CardContent>
-        <p className="text-sm text-muted-foreground my-2">
+        <p className="text-sm text-muted-foreground my-2 h-4">
           {expense.description}
         </p>
         <div className="flex justify-between items-center mt-5"
