@@ -22,12 +22,6 @@ export const saveAttendances = mutation({
       const insertedRecsId = await ctx.db.insert("attendance", record)
     }
 
-    // console.log(totalIds.length);
-    // console.log(records);
-
-
-
-
     return {
       ok: true,
       message: "تم حفظ حضور اليوم بنجاح",
@@ -99,10 +93,10 @@ export const deleteAttendance = mutation({
   handler: async (ctx, { id }) => {
     const existingRecord = await ctx.db.get(id);
     if (!existingRecord) {
-      throw new ConvexError("Attendance record not found");
+      return { ok: false, message: "فشل في حذف اليوم" };
     }
     await ctx.db.delete(id);
-    return { ok: true, message: "Attendance record deleted successfully" };
+    return { ok: true, message: "تم حذف اليوم بنجاح" };
   },
 });
 

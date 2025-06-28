@@ -12,7 +12,6 @@ import Companies from "./pages/Companies";
 import Attendance from "./pages/Attendance";
 import Expenses from "./pages/Expenses";
 import Payments from "./pages/Payments";
-import WorkerSummary from "./pages/WorkerSummary";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 import { Toaster } from "react-hot-toast";
@@ -27,7 +26,7 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/login" element={<Login />} />
-          <Route path="/worker-summary/:workerId" element={<WorkerSummary />} />
+          {/* <Route path="/worker-summary/:workerId" element={<WorkerSummary />} /> */}
           <Route path="/" element={
             <ProtectedRoute>
               <Layout>

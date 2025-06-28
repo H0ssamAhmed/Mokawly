@@ -12,6 +12,8 @@ import AttendanceTable from '@/components/AttendanceTable';
 import ExpensesTable from '@/components/ExpensesTable';
 import { workerData } from 'worker_threads';
 import CustomBadge from '@/components/CustomBadge';
+import ThemeToggler from '@/components/ThemeToggler';
+import WorkerNote from '@/components/WorkerNote';
 
 
 const PublicSummaryWorker = () => {
@@ -84,33 +86,26 @@ const PublicSummaryWorker = () => {
   return (
     <div className="min-h-screen ">
       {/* Header */}
-      <div className="bg-card border-b border-border p-4">
-        <div className="max-w-4xl mx-auto">
-          <div className="flex items-center gap-3 mb-2">
-            <User className="h-6 w-6 text-muted-foreground" />
-            <h1 className="text-2xl font-bold">{worker?.name}</h1>
-            <CustomBadge type={worker.type} />
-
-
+      <div className="bg-card border-b border-border p-2 ">
+        <div className="max-w-4xl mx-auto flex justify-between items-center">
+          <div>
+            <div className="flex items-center gap-3 mb-2">
+              <User className="h-6 w-6 text-muted-foreground" />
+              <h1 className="text-2xl font-bold">{worker?.name}</h1>
+              <CustomBadge type={worker.type} />
+            </div>
+            <p className="text-md text-muted-foreground my-4">
+              الاجر اليومي:
+              <span className='font-bold mx-4'>
+                {worker.dailyWage.toLocaleString('ar-SA')} ر.س/يوم
+              </span>
+            </p>
           </div>
-          <p className="text-md text-muted-foreground my-4">
-            الاجر اليومي:
-            <span className='font-bold mx-4'>
-              {worker.dailyWage.toLocaleString('ar-SA')} ر.س/يوم
-            </span>
-
-
-          </p>
+          <ThemeToggler />
         </div>
       </div>
       {worker.note && (
-        <div className="bg-card border-b border-border p-4">
-          <div className="max-w-4xl mx-auto">
-            <p className="text-md text-muted-foreground my-4">
-              {worker.note}
-            </p>
-          </div>
-        </div>
+        <WorkerNote note={worker.note} />
       )}
       {/* Content */}
       <div className="max-w-4xl mx-auto p-4 space-y-6">

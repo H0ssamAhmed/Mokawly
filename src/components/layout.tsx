@@ -2,7 +2,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "./auth-provider";
-import { useTheme } from "./theme-provider";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
@@ -12,10 +11,11 @@ import {
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
 import { Home, Users, Calendar, Settings, Menu, LogOut, Sun, Moon } from "lucide-react";
+import { cn } from "@/lib/utils";
+import ThemeToggler from "./ThemeToggler";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const { user, logout } = useAuth();
-  const { theme, setTheme } = useTheme();
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -27,10 +27,6 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     { name: "المصروفات", href: "/expenses", icon: Settings },
     { name: "المدفوعات", href: "/payments", icon: Settings },
   ];
-
-  const toggleTheme = () => {
-    setTheme(theme === "light" ? "dark" : "light");
-  };
 
   return (
     <div className="min-h-screen bg-background" dir="rtl">
@@ -48,9 +44,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           <h1 className="text-lg font-semibold">إدارة الطلاء</h1>
 
           <div className="flex items-center gap-2">
-            <Button variant="ghost" size="sm" onClick={toggleTheme}>
-              {theme === "light" ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
-            </Button>
+            <ThemeToggler />
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -102,23 +96,25 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         <div className="flex flex-col w-64 bg-card min-h-screen border-l border-border">
           <div className="flex items-center justify-between p-6 border-b border-border">
             <h1 className="text-xl font-bold">إدارة الطلاء</h1>
-            <Button variant="ghost" size="sm" onClick={toggleTheme}>
-              {theme === "light" ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
-            </Button>
+            <ThemeToggler />
           </div>
 
           <nav className="flex-1 p-4 space-y-2 ">
             {navigation.map((item) => {
               const Icon = item.icon;
               const isActive = location.pathname === item.href;
+
               return (
                 <Link
                   key={item.name}
                   to={item.href}
-                  className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${isActive
+                  className={cn("flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors", isActive
                     ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                    }`}
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted",
+                    // location.pathname == "/" && item.href == "/dashboard"
+                    //   ? "bg-primary text-primary-foreground"
+                    //   : "text-muted-foreground hover:text-foreground hover:bg-muted",
+                  )}
                 >
                   <Icon className="h-4 w-4" />
                   {item.name}

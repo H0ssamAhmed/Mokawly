@@ -166,7 +166,7 @@ export default function Attendance() {
                 تسجيل حضور العمال - {format(selectedDate, "EEEE", { locale: ar })}-  {format(selectedDate, "dd/MM/yyyy")}
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-4 h-fit max-h-[1500px] overflow-y-scroll">
               {loading && <SpinnerLoader />}
               {!loading && workers.map((worker) => (
                 <div key={worker._id} className="flex items-center justify-between p-3 border rounded-lg">
@@ -222,41 +222,7 @@ export default function Attendance() {
             </CardContent>
           </Card>
 
-          {/* Recent Records */}
-          <Card>
-            <CardHeader>
-              <CardTitle>سجلات حديثة</CardTitle>
-            </CardHeader>
-            <CardContent className="px-0">
-              <div className={cn("space-y-3 px-4", !isMobile && "overflow-y-scroll h-fit max-h-60")}>
-                {loading && !isAdding && <SpinnerLoader />}
-                {isAdding && <>
-                  <SpinnerLoader parentClassName="h-fit" />
-                  <p className="text-sm text-center text-muted-foreground">جاري الحفظ...</p>
-                </>}
-                {!loading && !isAdding && !attendanceRecords.length && <p className="text-sm text-center  text-muted-foreground">لا يوجد سجلات حديثة</p>}
-                {!loading && !isAdding && attendanceRecords?.map((record) => (
-                  <div key={record._id} className="flex justify-between items-center py-2 border-b last:border-0">
-                    <div>
-                      <p className="font-medium">
-                        <span className="font-bold block">
-                          {record.name}
-                        </span>
-                        <span className="text-muted-foreground">
-                          {format(new Date(record.date), "dd/MM/yyyy")}
-                        </span>
-                      </p>
-                      <p className="text-sm text-muted-foreground">
 
-                      </p>
-                    </div>
-                    <span className="font-semibold">{record.dailyWage.toLocaleString('ar-SA')} ر.س</span>
-                  </div>
-                )
-                )}
-              </div>
-            </CardContent>
-          </Card>
         </div>
       </div>
     </div>

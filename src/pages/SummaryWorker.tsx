@@ -11,6 +11,7 @@ import { cn } from '@/lib/utils';
 import AttendanceTable from '@/components/AttendanceTable';
 import ExpensesTable from '@/components/ExpensesTable';
 import CustomBadge from '@/components/CustomBadge';
+import WorkerNote from '@/components/WorkerNote';
 
 
 const SummaryWorker = () => {
@@ -55,27 +56,7 @@ const SummaryWorker = () => {
     );
   }
 
-  if (worker && !worker.isPublished) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-muted/30 p-4">
-        <Card className="w-full max-w-md text-center">
-          <CardContent className="pt-6">
-            <User className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <h1 className="text-xl font-bold mb-2">Access Denied</h1>
-            <p className="text-muted-foreground mb-4">
-              This worker's summary page is currently private and not accessible.
-            </p>
-            <Button asChild>
-              <a href="/">
-                <Home className="mr-2 h-4 w-4" />
-                Go Home
-              </a>
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
+
 
   // Calculate summary values
   const totalEarned = workerAttendance.reduce((sum, record) => sum + record.dailyWage, 0);
@@ -106,13 +87,7 @@ const SummaryWorker = () => {
         </Link>
       </div>
       {worker.note && (
-        <div className="bg-card border-b border-border p-4">
-          <div className="max-w-4xl mx-auto">
-            <p className="text-md text-muted-foreground my-4">
-              {worker.note}
-            </p>
-          </div>
-        </div>
+        <WorkerNote note={worker.note} />
       )}
       {/* Content */}
       <div className="max-w-4xl mx-auto p-4 space-y-6">
