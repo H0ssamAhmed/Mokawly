@@ -75,15 +75,14 @@ export const getAttendanceRecords = query({
 });
 
 // Get attendance for a specific date
-export const getAttendanceByDate = query({
+export const getAttendanceByDate = mutation({
   args: { date: v.string() },
   handler: async (ctx, { date }) => {
-    const record = await ctx.db
+    const records = await ctx.db
       .query("attendance")
       .withIndex("by_date", (q) => q.eq("date", date))
-      .first();
-
-    return record;
+      .collect();
+    return { ok: true, records };
   },
 });
 

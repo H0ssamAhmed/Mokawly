@@ -384,7 +384,7 @@ export default function Expenses() {
           {!jobExpenses.length && !isLoadingInitialData && <EmptyData />}
           {/* <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"> */}
           <div className="flex flex-wrap justify-center items-center  flex-row-reverse gap-4">
-            {jobExpenses.map(expense => <JobExpensesCard expense={expense} key={expense._id} />)}
+            {jobExpenses.reverse().map(expense => <JobExpensesCard expense={expense} key={expense._id} />)}
           </div>
         </TabsContent>
 
@@ -516,7 +516,7 @@ export default function Expenses() {
           {!workerExpenses.length && !isLoadingInitialData && <EmptyData />}
           {/* <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"> */}
           <div className="flex flex-wrap justify-center items-center  flex-row-reverse gap-4">
-            {workerExpenses.map(expense => <WorkerExpensesCard expense={expense} key={expense._id} />)}
+            {workerExpenses.reverse().map(expense => <WorkerExpensesCard expense={expense} key={expense._id} />)}
           </div>
         </TabsContent>
       </Tabs>

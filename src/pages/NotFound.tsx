@@ -18,7 +18,7 @@ const NotFound = () => {
         <h1 className="text-4xl bg font-bold mb-4">404</h1>
         <p className="text-xl mb-4">عفواً، الصفحة المطلوبة غير موجودة</p>
         <Button variant="default" className="bg-primary">
-          <Link to="/" className="bg-primary underline">
+          <Link to="/">
             الصفحة الرئيسية
           </Link>
         </Button>

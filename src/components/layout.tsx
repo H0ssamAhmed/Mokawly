@@ -93,13 +93,13 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
       {/* Desktop Sidebar */}
       <div className="hidden lg:flex">
-        <div className="flex flex-col w-64 bg-card min-h-screen border-l border-border">
+        <div className="flex flex-col w-64 bg-card sticky top-0 h-screen border-l border-border">
           <div className="flex items-center justify-between p-6 border-b border-border">
             <h1 className="text-xl font-bold">إدارة الطلاء</h1>
             <ThemeToggler />
           </div>
 
-          <nav className="flex-1 p-4 space-y-2 ">
+          <nav className="flex-1 p-4 space-y-2">
             {navigation.map((item) => {
               const Icon = item.icon;
               const isActive = location.pathname === item.href;
