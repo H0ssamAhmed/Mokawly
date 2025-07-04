@@ -26,7 +26,6 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/login" element={<Login />} />
-          {/* <Route path="/worker-summary/:workerId" element={<WorkerSummary />} /> */}
           <Route path="/" element={
             <ProtectedRoute>
               <Layout>

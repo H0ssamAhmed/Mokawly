@@ -6,119 +6,116 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Plus, Edit, Trash, Settings } from "lucide-react";
-import { toast } from "@/hooks/use-toast";
+import { CompanyType } from "@/types/CompanyTypes";
+import { Textarea } from "@/components/ui/textarea";
+import toast from "react-hot-toast";
+import ThemeToggler from "@/components/ThemeToggler";
 
-interface Company {
-  id: string;
-  name: string;
-  contact?: string;
-  phone?: string;
-  email?: string;
-}
 
 export default function Companies() {
-  const [companies, setCompanies] = useState<Company[]>([
+  const [companies, setCompanies] = useState<CompanyType[]>([
     {
-      id: "1",
-      name: "شركة البناء الحديث",
-      contact: "أحمد محمد",
-      phone: "+966501234567",
-      email: "ahmed@modernbuild.com",
-    },
-    {
-      id: "2",
-      name: "مؤسسة المقاولات الذهبية",
-      contact: "سارة علي",
-      phone: "+966507654321",
-    },
-    {
-      id: "3",
-      name: "شركة التطوير العقاري",
-      email: "info@realestate.com",
-    },
-  ]);
+      name: 'Bedore we Shorok',
+      person_one: 'eng:fawzy',
+      person_one_phone: 1155544,
+      person_two: "hany",
+      person_two_phone: 1456,
+      note: "note about compy",
+    },]
+  );
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [editingCompany, setEditingCompany] = useState<Company | null>(null);
-  const [formData, setFormData] = useState({
+  const [editingCompany, setEditingCompany] = useState<CompanyType | null>(null);
+  const [formData, setFormData] = useState<CompanyType>({
     name: "",
-    contact: "",
-    phone: "",
-    email: "",
+    person_one: "",
+    person_one_phone: null,
+    person_two: "",
+    person_two_phone: null,
+    note: "",
   });
 
   const resetForm = () => {
     setFormData({
       name: "",
-      contact: "",
-      phone: "",
-      email: "",
+      person_one: "",
+      person_one_phone: null,
+      person_two: "",
+      person_two_phone: null,
+      note: "",
     });
     setEditingCompany(null);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+    console.log(formData)
     if (!formData.name) {
-      toast({
-        title: "خطأ",
-        description: "اسم الشركة مطلوب",
-        variant: "destructive",
-      });
-      return;
+      toast.error("اسم الشؤكة مطلوب", {
+        duration: 4000
+      })
+      return
     }
+    if (!formData.person_one && !formData.person_two) {
+      toast.error("يجب اضافة مسؤول واحد علي الاقل")
+      return
+    }
+    console.log(formData)
 
-    const companyData: Company = {
-      id: editingCompany?.id || Date.now().toString(),
+
+    const companyData: CompanyType = {
       name: formData.name,
-      contact: formData.contact || undefined,
-      phone: formData.phone || undefined,
-      email: formData.email || undefined,
+      person_one: formData.person_one,
+      person_one_phone: formData.person_one_phone,
+      person_two: formData.person_two,
+      person_two_phone: formData.person_two_phone,
+      note: formData.note,
     };
 
-    if (editingCompany) {
-      setCompanies(companies.map(c => c.id === editingCompany.id ? companyData : c));
-      toast({
-        title: "نجح",
-        description: "تم تحديث الشركة بنجاح",
-      });
-    } else {
-      setCompanies([...companies, companyData]);
-      toast({
-        title: "نجح",
-        description: "تم إضافة الشركة بنجاح",
-      });
-    }
+    // if (editingCompany) {
+    //   setCompanies(companies.map(c => c._id === editingCompany._id ? companyData : c));
+    // toast({
+    //   title: "نجح",
+    //   description: "تم تحديث الشركة بنجاح",
+    // });
+    // } else {
+    //   setCompanies([...companies, companyData]);
+    // toast({
+    //   title: "نجح",
+    //   description: "تم إضافة الشركة بنجاح",
+    // });
+    // }
 
-    setIsDialogOpen(false);
-    resetForm();
+    // setIsDialogOpen(false);
+    // resetForm();
   };
 
-  const handleEdit = (company: Company) => {
+  const handleEdit = (company: CompanyType) => {
     setEditingCompany(company);
     setFormData({
       name: company.name,
-      contact: company.contact || "",
-      phone: company.phone || "",
-      email: company.email || "",
+      person_one: company.person_one || "",
+      person_one_phone: company.person_one_phone || null,
+      person_two: company.person_two || "",
+      person_two_phone: company.person_two_phone || null,
+      note: company.note
     });
     setIsDialogOpen(true);
   };
 
   const handleDelete = (id: string) => {
-    setCompanies(companies.filter(c => c.id !== id));
-    toast({
-      title: "نجح",
-      description: "تم حذف الشركة بنجاح",
-    });
+    setCompanies(companies.filter(c => c._id !== id));
+    // toast({
+    //   title: "نجح",
+    //   description: "تم حذف الشركة بنجاح",
+    // });
   };
 
   return (
     <div className="p-4 lg:p-6 space-y-6" dir="rtl">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <h1 className="text-2xl lg:text-3xl font-bold">الشركات</h1>
-        
+
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <Button onClick={resetForm}>
@@ -140,42 +137,65 @@ export default function Companies() {
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   placeholder="اسم الشركة"
-                  required
+
                 />
               </div>
-              
+
               <div className="space-y-2">
-                <Label htmlFor="contact">الشخص المسؤول</Label>
+                <Label htmlFor="persone_one">الشخص المسؤول الاول </Label>
                 <Input
-                  id="contact"
-                  value={formData.contact}
-                  onChange={(e) => setFormData({ ...formData, contact: e.target.value })}
-                  placeholder="اسم الشخص المسؤول"
+                  id="persone_one"
+                  value={formData.person_one}
+                  onChange={(e) => setFormData({ ...formData, person_one: e.target.value })}
+                  placeholder="اسم الشخص المسؤول الاول"
                 />
               </div>
-              
+
               <div className="space-y-2">
-                <Label htmlFor="phone">رقم الهاتف</Label>
+                <Label htmlFor="persone_one_phone">رقم هاتف  المسؤول الاول</Label>
                 <Input
-                  id="phone"
-                  type="tel"
-                  value={formData.phone}
-                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                  placeholder="+966501234567"
+                  id="persone_one_phone"
+                  type="number"
+                  className="placeholder:text-end"
+                  value={formData.person_one_phone}
+                  onChange={(e) => setFormData({ ...formData, person_one_phone: Number(e.target.value) })}
+                  placeholder="رقم الشخص المسؤول الاول"
+
                 />
               </div>
-              
               <div className="space-y-2">
-                <Label htmlFor="email">البريد الإلكتروني</Label>
+                <Label htmlFor="persone_two">الشخص المسؤول الثاني</Label>
                 <Input
-                  id="email"
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  placeholder="info@company.com"
+                  id="persone_two"
+                  value={formData.person_two}
+                  onChange={(e) => setFormData({ ...formData, person_two: e.target.value })}
+                  placeholder="اسم الشخص المسؤول الثاني"
                 />
               </div>
-              
+
+              <div className="space-y-2">
+                <Label htmlFor="persone_two_phone">رقم هاتف  المسؤول الثاني</Label>
+                <Input
+                  className="placeholder:text-end"
+                  id="persone_two_phone"
+                  type="number"
+                  value={formData.person_two_phone}
+                  onChange={(e) => setFormData({ ...formData, person_two_phone: Number(e.target.value) })}
+                  placeholder="رقم الشخص المسؤول الثاني"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="note">ملاحظات | معلومات اضافية (اختياري)</Label>
+                <ThemeToggler />
+                <Textarea
+                  id="note"
+                  value={formData.note}
+                  onChange={(e) => setFormData({ ...formData, note: e.target.value })}
+                  placeholder="ملاحظة عن الشركة او مثل حجم الشركة ومشاريعها... الخ"
+                />
+              </div>
+
               <div className="flex gap-2 pt-4">
                 <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)} className="flex-1">
                   إلغاء
@@ -191,7 +211,7 @@ export default function Companies() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {companies.map((company) => (
-          <Card key={company.id}>
+          <Card key={company._id}>
             <CardHeader className="pb-3">
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-2">
@@ -201,25 +221,37 @@ export default function Companies() {
               </div>
             </CardHeader>
             <CardContent className="space-y-3">
-              {company.contact && (
+              {company.person_one && (
                 <div className="text-sm">
                   <span className="text-muted-foreground">الشخص المسؤول: </span>
-                  {company.contact}
+                  {company.person_one}
                 </div>
               )}
-              
-              {company.phone && (
+
+              {company.person_one_phone && (
                 <div className="text-sm text-muted-foreground">
-                  📞 {company.phone}
+                  📞 {company.person_one_phone}
                 </div>
               )}
-              
-              {company.email && (
+              {company.person_two && (
+                <div className="text-sm">
+                  <span className="text-muted-foreground">الشخص المسؤول: </span>
+                  {company.person_two_phone}
+                </div>
+              )}
+
+              {company.person_one_phone && (
                 <div className="text-sm text-muted-foreground">
-                  ✉️ {company.email}
+                  📞 {company.person_one_phone}
                 </div>
               )}
-              
+
+              {company.note && (
+                <div className="text-sm text-muted-foreground">
+                  ✉️ {company.note}
+                </div>
+              )}
+
               <div className="flex gap-2 pt-2">
                 <Button
                   variant="outline"
@@ -233,7 +265,7 @@ export default function Companies() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => handleDelete(company.id)}
+                  onClick={() => handleDelete(company._id)}
                   className="text-red-600 hover:text-red-700"
                 >
                   <Trash className="h-3 w-3" />
@@ -242,7 +274,7 @@ export default function Companies() {
             </CardContent>
           </Card>
         ))}
-      </div>
+      </div> *
 
       {companies.length === 0 && (
         <Card>

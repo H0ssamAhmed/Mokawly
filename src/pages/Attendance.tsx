@@ -1,30 +1,23 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { format } from "date-fns";
 import { CalendarIcon, Loader } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { api } from '../../convex/_generated/api';
 import { useMutation, useQuery } from "convex/react";
-import { AttendanceRecord, DilayAttendance, WorkerType } from "@/types/SharedTypes";
-import { Badge } from "@/components/ui/badge";
-import { DayPicker } from "react-day-picker";
-import { ar, enUS } from "date-fns/locale";
+import { DilayAttendance, WorkerType } from "@/types/SharedTypes";
+import { ar } from "date-fns/locale";
 import CustomDayPicker from "@/components/CustomDayPicker";
-import CardSkeleton from "@/components/CardSkeleton";
 import SpinnerLoader from "@/components/SpinnerLoader";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import toast from "react-hot-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
-import CustomBadge from "@/components/CustomBadge";
 import DayAttendanceRecord from "@/components/DayAttendanceRecord";
-import { useMemo } from "react";
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogClose } from "@/components/ui/dialog";
 import SearchedDayRecord from "@/components/SearchedDayRecord";
-import { isSea } from "node:sea";
 
 export default function Attendance() {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
