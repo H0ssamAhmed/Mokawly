@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,49 +9,51 @@ import { Plus, Edit, Trash, Settings } from "lucide-react";
 import { CompanyType } from "@/types/CompanyTypes";
 import { Textarea } from "@/components/ui/textarea";
 import toast from "react-hot-toast";
-import ThemeToggler from "@/components/ThemeToggler";
+import { useMutation, useQuery } from "convex/react";
+import { api } from "../../convex/_generated/api";
+import SpinnerLoader from "@/components/SpinnerLoader";
+import CompnayCard from "@/components/CompnayCard";
 
 
 export default function Companies() {
-  const [companies, setCompanies] = useState<CompanyType[]>([
-    {
-      name: 'Bedore we Shorok',
-      person_one: 'eng:fawzy',
-      person_one_phone: 1155544,
-      person_two: "hany",
-      person_two_phone: 1456,
-      note: "note about compy",
-    },]
-  );
-
+  const [companies, setCompanies] = useState<CompanyType[]>([]);
+  const addNewCompany = useMutation(api.company.addCompany);
+  const getCompnaies = useQuery(api.company.getCompanies)
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [editingCompany, setEditingCompany] = useState<CompanyType | null>(null);
+
   const [formData, setFormData] = useState<CompanyType>({
     name: "",
     person_one: "",
-    person_one_phone: null,
+    person_one_phone: "",
     person_two: "",
-    person_two_phone: null,
+    person_two_phone: "",
     note: "",
   });
+
+  React.useEffect(() => {
+    if (getCompnaies) {
+      setCompanies(getCompnaies.companies);
+      setIsLoading(false)
+    }
+  }, [getCompnaies])
 
   const resetForm = () => {
     setFormData({
       name: "",
       person_one: "",
-      person_one_phone: null,
+      person_one_phone: "",
       person_two: "",
-      person_two_phone: null,
+      person_two_phone: "",
       note: "",
     });
-    setEditingCompany(null);
+    setIsDialogOpen(false)
   };
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log(formData)
     if (!formData.name) {
-      toast.error("اسم الشؤكة مطلوب", {
+      toast.error("اسم الشركة مطلوب", {
         duration: 4000
       })
       return
@@ -60,8 +62,17 @@ export default function Companies() {
       toast.error("يجب اضافة مسؤول واحد علي الاقل")
       return
     }
-    console.log(formData)
 
+    if (formData.person_one && !formData.person_one_phone) {
+      toast.error("يجب اضافة رقم المسؤول الاول")
+      return
+
+    }
+    if (formData.person_two && !formData.person_two_phone) {
+      toast.error("يجب اضافة رقم المسؤول الثاني")
+      return
+
+    }
 
     const companyData: CompanyType = {
       name: formData.name,
@@ -72,61 +83,48 @@ export default function Companies() {
       note: formData.note,
     };
 
-    // if (editingCompany) {
-    //   setCompanies(companies.map(c => c._id === editingCompany._id ? companyData : c));
-    // toast({
-    //   title: "نجح",
-    //   description: "تم تحديث الشركة بنجاح",
-    // });
-    // } else {
-    //   setCompanies([...companies, companyData]);
-    // toast({
-    //   title: "نجح",
-    //   description: "تم إضافة الشركة بنجاح",
-    // });
-    // }
+    addNewCompany(companyData)
+      .then((res) => {
+        if (res.ok) {
+          toast.success(res.message, {
+            icon: "✅",
+          })
+          resetForm();
+        }
+      })
+      .catch((err) => console.log(err))
+      .finally(() => {
+        console.log('done');
+      })
 
-    // setIsDialogOpen(false);
-    // resetForm();
+
+    resetForm();
   };
 
-  const handleEdit = (company: CompanyType) => {
-    setEditingCompany(company);
-    setFormData({
-      name: company.name,
-      person_one: company.person_one || "",
-      person_one_phone: company.person_one_phone || null,
-      person_two: company.person_two || "",
-      person_two_phone: company.person_two_phone || null,
-      note: company.note
-    });
-    setIsDialogOpen(true);
-  };
 
-  const handleDelete = (id: string) => {
-    setCompanies(companies.filter(c => c._id !== id));
-    // toast({
-    //   title: "نجح",
-    //   description: "تم حذف الشركة بنجاح",
-    // });
-  };
-
+  if (isLoading) {
+    return (
+      <div className=" h-screen flex flex-col items-center justify-center">
+        <SpinnerLoader className="my-4" parentClassName="h-fit" />
+        <p> جاري التحميل . . .</p>
+      </div>
+    )
+  }
   return (
     <div className="p-4 lg:p-6 space-y-6" dir="rtl">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <h1 className="text-2xl lg:text-3xl font-bold">الشركات</h1>
-
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen} >
           <DialogTrigger asChild>
             <Button onClick={resetForm}>
               <Plus className="mr-2 h-4 w-4" />
               إضافة شركة
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-md">
+          <DialogContent className="max-w-md max-h-screen overflow-y-scroll" dir="rtl">
             <DialogHeader>
-              <DialogTitle>
-                {editingCompany ? "تعديل الشركة" : "إضافة شركة جديدة"}
+              <DialogTitle className="text-start py-4">
+                إضافة شركة جديدة
               </DialogTitle>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -158,7 +156,7 @@ export default function Companies() {
                   type="number"
                   className="placeholder:text-end"
                   value={formData.person_one_phone}
-                  onChange={(e) => setFormData({ ...formData, person_one_phone: Number(e.target.value) })}
+                  onChange={(e) => setFormData({ ...formData, person_one_phone: e.target.value })}
                   placeholder="رقم الشخص المسؤول الاول"
 
                 />
@@ -180,14 +178,13 @@ export default function Companies() {
                   id="persone_two_phone"
                   type="number"
                   value={formData.person_two_phone}
-                  onChange={(e) => setFormData({ ...formData, person_two_phone: Number(e.target.value) })}
+                  onChange={(e) => setFormData({ ...formData, person_two_phone: e.target.value })}
                   placeholder="رقم الشخص المسؤول الثاني"
                 />
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="note">ملاحظات | معلومات اضافية (اختياري)</Label>
-                <ThemeToggler />
                 <Textarea
                   id="note"
                   value={formData.note}
@@ -201,7 +198,7 @@ export default function Companies() {
                   إلغاء
                 </Button>
                 <Button type="submit" className="flex-1">
-                  {editingCompany ? "تحديث" : "إضافة"} الشركة
+                  إضافة  شركة
                 </Button>
               </div>
             </form>
@@ -211,70 +208,16 @@ export default function Companies() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {companies.map((company) => (
-          <Card key={company._id}>
-            <CardHeader className="pb-3">
-              <div className="flex items-start justify-between">
-                <div className="flex items-center gap-2">
-                  <Settings className="h-5 w-5 text-muted-foreground" />
-                  <CardTitle className="text-base">{company.name}</CardTitle>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {company.person_one && (
-                <div className="text-sm">
-                  <span className="text-muted-foreground">الشخص المسؤول: </span>
-                  {company.person_one}
-                </div>
-              )}
-
-              {company.person_one_phone && (
-                <div className="text-sm text-muted-foreground">
-                  📞 {company.person_one_phone}
-                </div>
-              )}
-              {company.person_two && (
-                <div className="text-sm">
-                  <span className="text-muted-foreground">الشخص المسؤول: </span>
-                  {company.person_two_phone}
-                </div>
-              )}
-
-              {company.person_one_phone && (
-                <div className="text-sm text-muted-foreground">
-                  📞 {company.person_one_phone}
-                </div>
-              )}
-
-              {company.note && (
-                <div className="text-sm text-muted-foreground">
-                  ✉️ {company.note}
-                </div>
-              )}
-
-              <div className="flex gap-2 pt-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleEdit(company)}
-                  className="flex-1"
-                >
-                  <Edit className="mr-1 h-3 w-3" />
-                  تعديل
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleDelete(company._id)}
-                  className="text-red-600 hover:text-red-700"
-                >
-                  <Trash className="h-3 w-3" />
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+          <CompnayCard
+            formData={formData}
+            key={company._id}
+            setFormData={setFormData}
+            company={company}
+            resetForm={resetForm}
+            setEditingCompany={setEditingCompany}
+          />
         ))}
-      </div> *
+      </div>
 
       {companies.length === 0 && (
         <Card>

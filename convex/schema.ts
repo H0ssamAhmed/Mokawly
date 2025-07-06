@@ -36,4 +36,14 @@ export default defineSchema({
     amount: v.number(),
     date: v.string(),
   }),
+
+  company: defineTable({
+    name: v.string(),
+    person_one: v.optional(v.string()),
+    person_one_phone: v.optional(v.string()),
+    person_two: v.optional(v.string()),
+    person_two_phone: v.optional(v.string()),
+    note: v.string(),
+  }),
+
 });
