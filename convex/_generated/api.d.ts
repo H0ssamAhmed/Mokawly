@@ -16,6 +16,7 @@ import type {
 import type * as attendance from "../attendance.js";
 import type * as company from "../company.js";
 import type * as expenses from "../expenses.js";
+import type * as payment from "../payment.js";
 import type * as worker from "../worker.js";
 
 /**
@@ -30,6 +31,7 @@ declare const fullApi: ApiFromModules<{
   attendance: typeof attendance;
   company: typeof company;
   expenses: typeof expenses;
+  payment: typeof payment;
   worker: typeof worker;
 }>;
 export declare const api: FilterApi<

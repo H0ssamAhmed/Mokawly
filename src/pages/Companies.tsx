@@ -21,6 +21,7 @@ export default function Companies() {
   const getCompnaies = useQuery(api.company.getCompanies)
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [isAdding, setIsAdding] = useState(false);
   const [editingCompany, setEditingCompany] = useState<CompanyType | null>(null);
 
   const [formData, setFormData] = useState<CompanyType>({
@@ -71,8 +72,8 @@ export default function Companies() {
     if (formData.person_two && !formData.person_two_phone) {
       toast.error("يجب اضافة رقم المسؤول الثاني")
       return
-
     }
+    setIsAdding(true)
 
     const companyData: CompanyType = {
       name: formData.name,
@@ -90,15 +91,15 @@ export default function Companies() {
             icon: "✅",
           })
           resetForm();
+
         }
       })
       .catch((err) => console.log(err))
       .finally(() => {
-        console.log('done');
+        setIsAdding(false)
       })
 
 
-    resetForm();
   };
 
 
@@ -127,81 +128,83 @@ export default function Companies() {
                 إضافة شركة جديدة
               </DialogTitle>
             </DialogHeader>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="name">اسم الشركة *</Label>
-                <Input
-                  id="name"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  placeholder="اسم الشركة"
+            {isAdding
+              ? <SpinnerLoader className="my-4" parentClassName="h-fit" />
+              : <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="name">اسم الشركة *</Label>
+                  <Input
+                    id="name"
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    placeholder="اسم الشركة"
 
-                />
-              </div>
+                  />
+                </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="persone_one">الشخص المسؤول الاول </Label>
-                <Input
-                  id="persone_one"
-                  value={formData.person_one}
-                  onChange={(e) => setFormData({ ...formData, person_one: e.target.value })}
-                  placeholder="اسم الشخص المسؤول الاول"
-                />
-              </div>
+                <div className="space-y-2">
+                  <Label htmlFor="persone_one">الشخص المسؤول الاول </Label>
+                  <Input
+                    id="persone_one"
+                    value={formData.person_one}
+                    onChange={(e) => setFormData({ ...formData, person_one: e.target.value })}
+                    placeholder="اسم الشخص المسؤول الاول"
+                  />
+                </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="persone_one_phone">رقم هاتف  المسؤول الاول</Label>
-                <Input
-                  id="persone_one_phone"
-                  type="number"
-                  className="placeholder:text-end"
-                  value={formData.person_one_phone}
-                  onChange={(e) => setFormData({ ...formData, person_one_phone: e.target.value })}
-                  placeholder="رقم الشخص المسؤول الاول"
+                <div className="space-y-2">
+                  <Label htmlFor="persone_one_phone">رقم هاتف  المسؤول الاول</Label>
+                  <Input
+                    id="persone_one_phone"
+                    type="number"
+                    className="placeholder:text-start"
+                    value={formData.person_one_phone}
+                    onChange={(e) => setFormData({ ...formData, person_one_phone: e.target.value })}
+                    placeholder="رقم الشخص المسؤول الاول"
 
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="persone_two">الشخص المسؤول الثاني</Label>
-                <Input
-                  id="persone_two"
-                  value={formData.person_two}
-                  onChange={(e) => setFormData({ ...formData, person_two: e.target.value })}
-                  placeholder="اسم الشخص المسؤول الثاني"
-                />
-              </div>
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="persone_two">الشخص المسؤول الثاني</Label>
+                  <Input
+                    id="persone_two"
+                    value={formData.person_two}
+                    onChange={(e) => setFormData({ ...formData, person_two: e.target.value })}
+                    placeholder="اسم الشخص المسؤول الثاني"
+                  />
+                </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="persone_two_phone">رقم هاتف  المسؤول الثاني</Label>
-                <Input
-                  className="placeholder:text-end"
-                  id="persone_two_phone"
-                  type="number"
-                  value={formData.person_two_phone}
-                  onChange={(e) => setFormData({ ...formData, person_two_phone: e.target.value })}
-                  placeholder="رقم الشخص المسؤول الثاني"
-                />
-              </div>
+                <div className="space-y-2">
+                  <Label htmlFor="persone_two_phone">رقم هاتف  المسؤول الثاني</Label>
+                  <Input
+                    className="placeholder:text-start"
+                    id="persone_two_phone"
+                    type="number"
+                    value={formData.person_two_phone}
+                    onChange={(e) => setFormData({ ...formData, person_two_phone: e.target.value })}
+                    placeholder="رقم الشخص المسؤول الثاني"
+                  />
+                </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="note">ملاحظات | معلومات اضافية (اختياري)</Label>
-                <Textarea
-                  id="note"
-                  value={formData.note}
-                  onChange={(e) => setFormData({ ...formData, note: e.target.value })}
-                  placeholder="ملاحظة عن الشركة او مثل حجم الشركة ومشاريعها... الخ"
-                />
-              </div>
+                <div className="space-y-2">
+                  <Label htmlFor="note">ملاحظات | معلومات اضافية (اختياري)</Label>
+                  <Textarea
+                    id="note"
+                    value={formData.note}
+                    onChange={(e) => setFormData({ ...formData, note: e.target.value })}
+                    placeholder="ملاحظة عن الشركة او مثل حجم الشركة ومشاريعها... الخ"
+                  />
+                </div>
 
-              <div className="flex gap-2 pt-4">
-                <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)} className="flex-1">
-                  إلغاء
-                </Button>
-                <Button type="submit" className="flex-1">
-                  إضافة  شركة
-                </Button>
-              </div>
-            </form>
+                <div className="flex gap-2 pt-4">
+                  <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)} className="flex-1">
+                    إلغاء
+                  </Button>
+                  <Button type="submit" className="flex-1">
+                    إضافة  شركة
+                  </Button>
+                </div>
+              </form>}
           </DialogContent>
         </Dialog>
       </div>
@@ -214,7 +217,7 @@ export default function Companies() {
             setFormData={setFormData}
             company={company}
             resetForm={resetForm}
-            setEditingCompany={setEditingCompany}
+          // setEditingCompany={setEditingCompany}
           />
         ))}
       </div>

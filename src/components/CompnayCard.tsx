@@ -18,11 +18,11 @@ interface Props {
   resetForm: () => void
   setFormData: React.Dispatch<React.SetStateAction<CompanyType | null>>
   formData: CompanyType,
-  setEditingCompany: React.Dispatch<React.SetStateAction<CompanyType | null>>
+  // setEditingCompany: React.Dispatch<React.SetStateAction<CompanyType | null>>
   // setIsDialogOpen: React.Dispatch<React.SetStateAction<boolean>>
 
 }
-const CompnayCard = ({ company, resetForm, setFormData, formData, setEditingCompany }: Props) => {
+const CompnayCard = ({ company, resetForm, setFormData, formData, }: Props) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -32,7 +32,7 @@ const CompnayCard = ({ company, resetForm, setFormData, formData, setEditingComp
 
 
   const handleEdit = (company: CompanyType) => {
-    setEditingCompany(company);
+    // setEditingCompany(company);
     setFormData({
       _id: company._id,
       name: company.name,
@@ -151,7 +151,7 @@ const CompnayCard = ({ company, resetForm, setFormData, formData, setEditingComp
           {company.person_two && (
             <div className="text-sm">
               <span className="text-muted-foreground">  المسؤول الثاني  : </span>
-              {company.person_two_phone}
+              {company.person_two}
             </div>
           )}
 
