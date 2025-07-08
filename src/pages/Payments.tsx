@@ -2,60 +2,59 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-
-import { format } from "date-fns";
-import { CalendarIcon, Plus, Settings, Trash, TrashIcon } from "lucide-react";
+import { Plus, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
-import toast from "react-hot-toast";
-import { useMutation, useQuery } from "convex/react";
+import { useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
-import { parse } from "path";
-import CustomDayPicker from "@/components/CustomDayPicker";
-import SpinnerLoader from "@/components/SpinnerLoader";
 import { Payment } from "@/types/Payment";
 import AddPayment from "@/components/AddPayment";
+import { CompanyType } from "@/types/CompanyTypes";
+import PaymentItem from "@/components/PaymentItem";
 
+
+
+interface CompanyPayment extends CompanyType {
+  payments: Payment[];
+  total: number
+}
 
 
 export default function Payments() {
   const [payments, setPayments] = useState<Payment[]>([]);
   const [companies, setCompanies] = useState([]);
   const [showPayments, setShowPayemnts] = useState<boolean>(true);
+  const [categorisedpaymentsByCompany, setCategorisedpaymentsByCompany] = useState<CompanyPayment[]>([]);
   const getCompnaies = useQuery(api.company.getCompanies)
   const getPayments = useQuery(api.payment.getAllPayments)
-  const deleteAPayment = useMutation(api.payment.deletePayment)
 
   useEffect(() => {
     if (getCompnaies) {
       setCompanies(getCompnaies.companies);
+
     }
     if (getPayments) {
       setPayments(getPayments.payments)
     }
-  }, [getCompnaies])
-
-  const deletePayment = (id: string) => {
-    deleteAPayment({ id })
-      .then(() => {
-        toast.success("تم حذف الدفعة بنجاح")
-
-      })
-  }
-
-  const totalPayments = payments.reduce((sum, payment) => sum + payment.amount, 0);
+  }, [getCompnaies, getPayments])
 
 
 
-  // Group payments by company
-  const paymentsByCompany = companies.map(company => ({
-    ...company,
-    payments: payments.filter(p => p.companyId === company._id),
-    total: payments
-      .filter(p => p.companyId === company._id)
-      .reduce((sum, p) => sum + p.amount, 0),
-  }));
-  console.log(paymentsByCompany);
+  const totalPayments = payments.reduce((sum, payment) => sum + payment.amount, 0)
 
+
+
+
+  // Group payments by company 
+  useEffect(() => {
+    const paymentsByCompany = companies.map(company => ({
+      ...company,
+      payments: payments.filter(p => p.companyId === company._id),
+      total: payments
+        .filter(p => p.companyId === company._id)
+        .reduce((sum, p) => sum + p.amount, 0),
+    }));
+    setCategorisedpaymentsByCompany(paymentsByCompany);
+  }, [companies, payments])
 
   return (
     <div className="p-4 lg:p-6 space-y-6" dir="rtl">
@@ -64,7 +63,7 @@ export default function Payments() {
         <AddPayment companies={companies} />
 
       </div>
-      <div className="grid grid-cols-2 lg:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Summary Card */}
         <Card>
           <CardHeader className="pb-2">
@@ -97,7 +96,7 @@ export default function Payments() {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {paymentsByCompany.map((company) => (
+            {categorisedpaymentsByCompany.map((company) => (
               <div key={company._id} className="p-4 border rounded-lg">
                 <div className="flex items-center gap-2 mb-2">
                   <Settings className="h-4 w-4 text-muted-foreground" />
@@ -131,38 +130,23 @@ export default function Payments() {
           )}
         >
           <div className="space-y-4">
-            {payments
-              .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+            {!payments.length &&
+              <div className="flex flex-col items-center justify-center gap-4">
+                <p>لا يوجد دفعات</p>
+                <Button>
+                  <Plus className="mr-2 h-4 w-4" />
+                  تسجيل دفعة
+                </Button>
+              </div>
+            }
+            {payments && payments
+              .sort((a, b) => b._creationTime - a._creationTime)
               .map((payment) => (
-                <div key={payment._id} className="flex justify-between items-start p-4 border rounded-lg">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <Settings className="h-4 w-4 text-muted-foreground" />
-                      <h3 className="font-medium">{payment.companyName}</h3>
-                    </div>
-                    <p className="text-sm text-muted-foreground mb-1">
-                      {format(new Date(payment.date), "dd/MM/yyyy")}
-                    </p>
-                    {payment.note && (
-                      <p className="text-sm text-muted-foreground">{payment.note}</p>
-                    )}
-                  </div>
-                  <div className="flex flex-col items-end gap-y-5">
-                    <span className="text-lg font-bold text-green-600">
-                      +{payment.amount.toLocaleString('ar-SA')} ر.س
-                    </span>
-                    <Button
-                      onClick={() => deletePayment(payment._id)}
-                      variant="destructive" size="icon">
-                      <Trash />
-                    </Button>
-                  </div>
-                </div>
+                <PaymentItem key={payment._id} payment={payment} companies={companies} />
               ))}
           </div>
         </CardContent>}
       </Card>
-
     </div>
   );
 }

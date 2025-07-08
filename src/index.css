@@ -1,4 +1,3 @@
-
 @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700&display=swap');
 
 @tailwind base;
@@ -118,11 +117,37 @@
   }
 }
 
+* {
+  scrollbar-width: thin;
+  /* Firefox */
+  scrollbar-color: hsl(var(--primary)) hsl(var(--primary-foreground));
+  /* Firefox */
+}
+
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+*::-webkit-scrollbar-track {
+  background: hsl(var(--primary-foreground));
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: #888;
+  border-radius: 10px;
+  border: 9px solid #47e40e;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: #ad0808;
+}
+
 @layer utilities {
   .hover-scale {
     @apply transition-transform duration-200 hover:scale-105;
   }
-  
+
   .touch-friendly {
     @apply min-h-[44px] min-w-[44px];
   }

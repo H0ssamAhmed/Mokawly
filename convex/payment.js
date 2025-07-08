@@ -5,7 +5,6 @@ import { v } from "convex/values";
 export const addPayment = mutation({
   args: {
     companyId: v.id("company"),
-    companyName: v.string(),
     amount: v.number(),
     date: v.string(),
     note: v.optional(v.string()),
@@ -53,7 +52,6 @@ export const deletePayment = mutation({
   args: { id: v.id("payment") },
   handler: async (ctx, { id }) => {
     const deletedId = await ctx.db.delete(id);
-    console.log(deletedId);
 
     return {
       ok: true,

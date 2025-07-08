@@ -48,7 +48,6 @@ export default defineSchema({
 
   payment: defineTable({
     companyId: v.id("company"),
-    companyName: v.string(),
     amount: v.number(),
     date: v.string(),
     note: v.optional(v.string()),

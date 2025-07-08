@@ -26,7 +26,7 @@ const AddPayment = ({ companies }: { companies: CompanyType[] }) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState<Payment>({
-    companyName: "",
+
     companyId: "",
     amount: 0,
     date: String(new Date()),
@@ -35,7 +35,6 @@ const AddPayment = ({ companies }: { companies: CompanyType[] }) => {
 
   const resetForm = () => {
     setFormData({
-      companyName: "",
       companyId: "",
       amount: 0,
       date: String(new Date()),
@@ -52,10 +51,8 @@ const AddPayment = ({ companies }: { companies: CompanyType[] }) => {
     }
     setLoading(true)
 
-    const company = companies.find(c => c._id === formData.companyId);
     const newPayment: Payment = {
       companyId: formData.companyId,
-      companyName: company?.name || "",
       amount: Number(formData.amount),
       date: format(formData.date, "yyyy-MM-dd"),
       note: formData.note || '',
