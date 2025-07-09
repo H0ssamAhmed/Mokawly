@@ -135,7 +135,6 @@ export default function Attendance() {
 
     const promise = SearchAttendanceByDate({ date: format(date, "yyyy-MM-dd") })
       .then((res) => {
-        console.log(res);
         if (!res.ok) throw new Error("Backend returned error");
         setSearchedAttendance(res.records);
         setIsSearchDone(true);

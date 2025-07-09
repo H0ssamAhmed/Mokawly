@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -8,12 +8,27 @@ import { format } from "date-fns";
 import { CalendarIcon, Download, TrendingUp, TrendingDown, DollarSign, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { DateRange } from "react-day-picker";
+import { useQuery } from "convex/react";
+import { api } from "../../convex/_generated/api";
+import SpinnerLoader from "@/components/SpinnerLoader";
 
 export default function Dashboard() {
   const [dateRange, setDateRange] = useState<DateRange | undefined>({
     from: new Date(2024, 11, 1),
     to: new Date(2024, 11, 31),
   });
+  const [profit, setProfit] = useState<number>(0)
+  const [loading, setLoading] = useState<boolean>(true)
+  const getStats = useQuery(api.statistics.getStatistics)
+
+  useEffect(() => {
+    if (getStats) {
+      const totalProfit = getStats.totalPayment - (getStats.totalJobExpenses + getStats.totalworkersExpenses);
+
+      setProfit(totalProfit)
+      setLoading(false)
+    }
+  }, [getStats])
 
   // Mock data - in a real app, this would come from your backend
   const stats = {
@@ -32,11 +47,21 @@ export default function Dashboard() {
     }
   };
 
+  if (loading) {
+    return (
+      <div className="h-screen flex flex-col items-center justify-center">
+        <SpinnerLoader parentClassName="m-0 h-fit" />
+        <p>جاري التحميل...</p>
+      </div>
+    )
+
+  }
+
   return (
     <div className="p-4 lg:p-6 space-y-6" dir="rtl">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <h1 className="text-2xl lg:text-3xl font-bold">لوحة التحكم</h1>
-        
+
         <div className="flex flex-col sm:flex-row gap-2">
           <Popover>
             <PopoverTrigger asChild>
@@ -73,7 +98,7 @@ export default function Dashboard() {
               />
             </PopoverContent>
           </Popover>
-          
+
           <Button variant="outline" className="w-full sm:w-auto">
             <Download className="mr-2 h-4 w-4" />
             تصدير التقرير
@@ -82,73 +107,105 @@ export default function Dashboard() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">مصروفات العمل</CardTitle>
-            <TrendingDown className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-red-600">
-              {stats.totalJobExpenses.toLocaleString('ar-SA')} ر.س
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">مصروفات العمال</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-red-600">
-              {stats.totalWorkerExpenses.toLocaleString('ar-SA')} ر.س
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">إجمالي الأجور</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-red-600">
-              {stats.totalWages.toLocaleString('ar-SA')} ر.س
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">إجمالي المدفوعات</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-600">
-              {stats.totalPayments.toLocaleString('ar-SA')} ر.س
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Balance Card */}
-      <Card className="md:col-span-2">
+      <Card>
         <CardHeader>
-          <CardTitle className="text-center">الرصيد الإجمالي</CardTitle>
+          <CardTitle>المدفوعات و المصروفات</CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className={`text-4xl font-bold text-center ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
-            {isPositive ? '+' : ''}{balance.toLocaleString('ar-SA')} ر.س
-          </div>
-          <p className="text-center text-muted-foreground mt-2">
-            المدفوعات - (مصروفات العمل + مصروفات العمال + الأجور)
-          </p>
+        <CardContent className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">مصروفات العمل</CardTitle>
+              <TrendingDown className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-red-600">
+                {getStats?.totalJobExpenses.toLocaleString('ar-SA')} ر.س
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">مصروفات العمال</CardTitle>
+              <Users className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-red-600">
+                {getStats?.totalworkersExpenses.toLocaleString('ar-SA')} ر.س
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">إجمالي الأجور</CardTitle>
+              <DollarSign className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-red-600">
+                {getStats?.totalworkerDailyWage.toLocaleString('ar-SA')} ر.س
+              </div>
+            </CardContent>
+          </Card>
+
         </CardContent>
+
+      </Card>
+      <Card>
+        <CardHeader>
+          <CardTitle>الدفعات والارباح</CardTitle>
+        </CardHeader>
+        <CardContent className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4">
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">إجمالي عدد الدفعات</CardTitle>
+              <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-green-600">
+                {getStats?.totalPaymentLength.length.toLocaleString('ar-SA')} دفعات
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">إجمالي الدفعات</CardTitle>
+              <DollarSign className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-green-600">
+                {getStats?.totalPayment.toLocaleString('ar-SA')} ر.س
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="md:col-span-3">
+            <CardHeader>
+              <CardTitle className="text-center">الرصيد الإجمالي</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className={`text-4xl font-bold text-center ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
+                {isPositive ? '+' : ''}{profit.toLocaleString('ar-SA')} ر.س
+              </div>
+              <p className="text-center text-muted-foreground mt-2">
+                المدفوعات - (مصروفات العمل + مصروفات العمال + الأجور)
+              </p>
+            </CardContent>
+          </Card>
+
+        </CardContent>
+
       </Card>
 
+      {/* Balance Card */}
+
+
+
       {/* Recent Activity */}
-      <Card>
+      {/* <Card>
         <CardHeader>
           <CardTitle>النشاط الأخير</CardTitle>
         </CardHeader>
@@ -161,7 +218,7 @@ export default function Dashboard() {
               </div>
               <span className="font-bold text-green-600">+٥٠٠٠ ر.س</span>
             </div>
-            
+
             <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
               <div>
                 <p className="font-medium">مصروف وقود</p>
@@ -169,7 +226,7 @@ export default function Dashboard() {
               </div>
               <span className="font-bold text-red-600">-٨٥ ر.س</span>
             </div>
-            
+
             <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
               <div>
                 <p className="font-medium">أجور يوم العمل</p>
@@ -179,7 +236,7 @@ export default function Dashboard() {
             </div>
           </div>
         </CardContent>
-      </Card>
+      </Card> */}
     </div>
   );
 }

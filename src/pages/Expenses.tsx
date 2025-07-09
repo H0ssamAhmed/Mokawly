@@ -10,7 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { format } from "date-fns";
-import { CalendarIcon, Loader2, MousePointerClick, MousePointerClickIcon, Plus, Settings, Trash2Icon } from "lucide-react";
+import { ArrowDown, CalendarIcon, Loader2, MousePointerClick, MousePointerClickIcon, Plus, Settings, Trash2Icon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import toast from "react-hot-toast";
 import { useMutation, useQuery } from "convex/react";
@@ -23,6 +23,20 @@ import JobExpensesCard from "@/components/JobExpensesCard";
 import CustomDayPicker from "@/components/CustomDayPicker";
 import { Skeleton } from "@/components/ui/skeleton";
 import SpinnerLoader from "@/components/SpinnerLoader";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuPortal,
+  DropdownMenuSeparator,
+  DropdownMenuShortcut,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuTrigger
+} from "@/components/ui/dropdown-menu";
 
 
 // Mock workers data
@@ -33,6 +47,7 @@ const expenseTypes = [
   "المواد",
   "الأدوات",
   "المعدات",
+  "حسابات سابقة للناس",
   "أخرى",
 ];
 const paidBy = [
@@ -203,7 +218,15 @@ export default function Expenses() {
     setActiveTab(tab);
     setSearchParams({ "tab": tab });
   }
+  const handleFilterByType = (type: string) => {
+    if (type == "all") {
+      setJobExpenses(getAllJobExpenses.expenses);
+      return
+    }
+    const filteredExpenses = getAllJobExpenses.expenses.filter((expense) => expense.type === type);
+    setJobExpenses(filteredExpenses);
 
+  }
   return (
     <div className="container p-4 lg:p-6 space-y-6" dir="rtl">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -272,7 +295,6 @@ export default function Expenses() {
 
         <TabsContent value="job" className="space-y-6">
           <div className="flex gap-y-5 flex-col-reverse md:flex-row justify-between items-center">
-            <h2 className="text-xl font-semibold">المصروفات المتعلقة بالعمل</h2>
             <Dialog open={isJobDialogOpen} onOpenChange={setIsJobDialogOpen}>
               <DialogTrigger asChild>
                 <Button onClick={resetJobForm}>
@@ -378,6 +400,33 @@ export default function Expenses() {
                   </form>}
               </DialogContent>
             </Dialog>
+            <div className="flex items-center gap-4">
+              <DropdownMenu>
+                <DropdownMenuTrigger>
+
+                  <Button variant="outline"
+                  >
+                    <ArrowDown />
+                    تصنيف
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56" align="start">
+                  <DropdownMenuLabel className="font-semibold text-muted-foreground">تصنيف حسب نوع المصروف</DropdownMenuLabel>
+                  <DropdownMenuItem onClick={() => handleFilterByType("all")}>
+                    الكل
+                  </DropdownMenuItem>
+                  {expenseTypes.map((type) => (
+                    <DropdownMenuItem key={type} onClick={() => handleFilterByType(type)}>
+                      {type}
+                    </DropdownMenuItem>
+                  ))
+                  }
+
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <h2 className="text-xl font-semibold">المصروفات المتعلقة بالعمل</h2>
+
+            </div>
           </div>
           <hr className='w-full' />
           {isLoadingInitialData && <SpinnerLoader />}
@@ -390,7 +439,6 @@ export default function Expenses() {
 
         <TabsContent value="worker" className="space-y-6">
           <div className="flex gap-y-5 flex-col-reverse md:flex-row justify-between items-center">
-            <h2 className="text-xl font-semibold">المصروفات الخاصة بالعمال</h2>
             <Dialog open={isWorkerDialogOpen} onOpenChange={setIsWorkerDialogOpen}>
               <DialogTrigger asChild>
                 <Button onClick={resetWorkerForm}>
@@ -509,8 +557,10 @@ export default function Expenses() {
 
               </DialogContent>
             </Dialog>
+            <div>
+              <h2 className="text-xl font-semibold">المصروفات الخاصة بالعمال</h2>
+            </div>
           </div>
-
           <hr className='w-full' />
           {isLoadingInitialData && <SpinnerLoader />}
           {!workerExpenses.length && !isLoadingInitialData && <EmptyData />}
