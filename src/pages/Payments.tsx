@@ -10,6 +10,8 @@ import { Payment } from "@/types/Payment";
 import AddPayment from "@/components/AddPayment";
 import { CompanyType } from "@/types/CompanyTypes";
 import PaymentItem from "@/components/PaymentItem";
+import { Skeleton } from "@/components/ui/skeleton";
+import SpinnerLoader from "@/components/SpinnerLoader";
 
 
 
@@ -23,6 +25,7 @@ export default function Payments() {
   const [payments, setPayments] = useState<Payment[]>([]);
   const [companies, setCompanies] = useState([]);
   const [showPayments, setShowPayemnts] = useState<boolean>(true);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const [categorisedpaymentsByCompany, setCategorisedpaymentsByCompany] = useState<CompanyPayment[]>([]);
   const getCompnaies = useQuery(api.company.getCompanies)
   const getPayments = useQuery(api.payment.getAllPayments)
@@ -34,6 +37,9 @@ export default function Payments() {
     }
     if (getPayments) {
       setPayments(getPayments.payments)
+    }
+    if (getPayments && getCompnaies) {
+      setIsLoading(false);
     }
   }, [getCompnaies, getPayments])
 
@@ -61,7 +67,6 @@ export default function Payments() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <h1 className="text-2xl lg:text-3xl font-bold">المدفوعات</h1>
         <AddPayment companies={companies} />
-
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Summary Card */}
@@ -71,7 +76,12 @@ export default function Payments() {
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-green-600">
-              {totalPayments.toLocaleString('ar-SA')} ر.س
+              {isLoading
+                ? <Skeleton className="w-1/3 mt-4 h-8 bg-muted-foreground" />
+                :
+                totalPayments.toLocaleString('ar-SA') + " ر.س"
+              }
+
             </div>
           </CardContent>
         </Card>
@@ -82,7 +92,11 @@ export default function Payments() {
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-green-600">
-              {payments.length} دفعة
+              {isLoading
+                ? <Skeleton className="w-1/3 mt-4 h-8 bg-muted-foreground" />
+                :
+                payments.length + " دفعة"
+              }
             </div>
           </CardContent>
         </Card>
@@ -95,21 +109,25 @@ export default function Payments() {
 
         </CardHeader>
         <CardContent>
+
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {categorisedpaymentsByCompany.map((company) => (
-              <div key={company._id} className="p-4 border rounded-lg">
-                <div className="flex items-center gap-2 mb-2">
-                  <Settings className="h-4 w-4 text-muted-foreground" />
-                  <h3 className="font-medium">{company.name}</h3>
+            {isLoading
+              ? Array.from({ length: 6 }).map((_, indx) => (<Skeleton key={indx} className="w-full mt-4 h-20 bg-muted-foreground " />))
+              : categorisedpaymentsByCompany.map((company) => (
+                <div key={company._id} className="p-4 border rounded-lg">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Settings className="h-4 w-4 text-muted-foreground" />
+                    <h3 className="font-medium">{company.name}</h3>
+                  </div>
+                  <div className="text-xl font-bold text-green-600 mb-2">
+                    {company.total.toLocaleString('ar-SA')} ر.س
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    {company.payments.length} دفعة{company.payments.length !== 1 ? '' : ''}
+                  </p>
                 </div>
-                <div className="text-xl font-bold text-green-600 mb-2">
-                  {company.total.toLocaleString('ar-SA')} ر.س
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  {company.payments.length} دفعة{company.payments.length !== 1 ? '' : ''}
-                </p>
-              </div>
-            ))}
+              ))}
+
           </div>
         </CardContent>
       </Card>

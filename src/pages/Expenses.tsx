@@ -1,42 +1,28 @@
+import { cn } from "@/lib/utils";
+import { format } from "date-fns";
+import toast from "react-hot-toast";
 import { useEffect, useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { format } from "date-fns";
-import { ArrowDown, CalendarIcon, Loader2, MousePointerClick, MousePointerClickIcon, Plus, Settings, Trash2Icon } from "lucide-react";
-import { cn } from "@/lib/utils";
-import toast from "react-hot-toast";
-import { useMutation, useQuery } from "convex/react";
+import EmptyData from "@/components/EmptyData";
+import { Button } from "@/components/ui/button";
 import { api } from "../../convex/_generated/api";
 import { useSearchParams } from "react-router-dom";
-import { JobExpense, WorkerExpense } from "@/types/SharedTypes";
-import EmptyData from "@/components/EmptyData";
-import WorkerExpensesCard from "@/components/WorkerExpensesCard";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Textarea } from "@/components/ui/textarea";
+import { useMutation, useQuery } from "convex/react";
+import SpinnerLoader from "@/components/SpinnerLoader";
 import JobExpensesCard from "@/components/JobExpensesCard";
 import CustomDayPicker from "@/components/CustomDayPicker";
-import { Skeleton } from "@/components/ui/skeleton";
-import SpinnerLoader from "@/components/SpinnerLoader";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuPortal,
-  DropdownMenuSeparator,
-  DropdownMenuShortcut,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
-  DropdownMenuTrigger
-} from "@/components/ui/dropdown-menu";
+import { JobExpense, WorkerExpense } from "@/types/SharedTypes";
+import WorkerExpensesCard from "@/components/WorkerExpensesCard";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { ArrowDown, CalendarIcon, Loader2, MousePointerClick, Plus } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 
 // Mock workers data
@@ -60,8 +46,7 @@ export default function Expenses() {
   const addNewJobExpense = useMutation(api.expenses.addJobExpense);
   const getAllWorkerExpenses = useQuery(api.expenses.getWorkerExpenses);
   const getAllJobExpenses = useQuery(api.expenses.getJobExpenses);
-  const existWorkers = useQuery(api.worker.getWorkers);;
-
+  const existWorkers = useQuery(api.worker.getWorkers);
   const [jobExpenses, setJobExpenses] = useState<JobExpense[]>([]);
   const [totalWorkerExpenses, setTotalWorkerExpenses] = useState<number>(0)
   const [totalJobExpenses, setTotalJobExpenses] = useState<number>(0)
@@ -72,25 +57,9 @@ export default function Expenses() {
   const [isWorkerDialogOpen, setIsWorkerDialogOpen] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams()
   const [activeTab, setActiveTab] = useState<string>(searchParams.get("tab") || "job");
-
   const [workers, setWorkers] = useState([]);
-
-  const [jobFormData, setJobFormData] = useState({
-    type: "",
-    description: "",
-    paidBy: "",
-    amount: "",
-    date: new Date(),
-  });
-
-  const [workerFormData, setWorkerFormData] = useState({
-    workerId: "",
-    workerName: "",
-    amount: "",
-    paidBy: "",
-    description: "",
-    date: new Date(),
-  });
+  const [jobFormData, setJobFormData] = useState({ type: "", description: "", paidBy: "", amount: "", date: new Date(), });
+  const [workerFormData, setWorkerFormData] = useState({ workerId: "", workerName: "", amount: "", paidBy: "", description: "", date: new Date() });
 
 
   useEffect(() => {
@@ -246,7 +215,7 @@ export default function Expenses() {
           <CardContent>
             {isLoadingInitialData
               ?
-              <Skeleton className="w-1/3 mt-4 h-8 bg-destructive animate-bounce" />
+              <Skeleton className="w-1/3 mt-4 h-8 bg-muted-foreground" />
               :
               <div className="text-2xl mt-4 font-bold text-red-600">
                 {totalWorkerExpenses.toLocaleString('ar-SA')} ر.س
@@ -271,7 +240,7 @@ export default function Expenses() {
           <CardContent>
             {isLoadingInitialData
               ?
-              <Skeleton className="w-1/3 mt-4 h-8 bg-destructive animate-bounce" />
+              <Skeleton className="w-1/3 mt-4 h-8 bg-muted-foreground" />
               :
               <div className="text-2xl font-bold text-red-600">
                 {totalJobExpenses.toLocaleString('ar-SA')} ر.س
@@ -404,8 +373,7 @@ export default function Expenses() {
               <DropdownMenu>
                 <DropdownMenuTrigger>
 
-                  <Button variant="outline"
-                  >
+                  <Button variant="outline">
                     <ArrowDown />
                     تصنيف
                   </Button>

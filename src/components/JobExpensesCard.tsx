@@ -28,9 +28,8 @@ const JobExpensesCard = ({ expense }) => {
           </span>
         </div>
       </CardHeader>
-      <CardContent>
-        <p className="text-sm text-muted-foreground my-2 h-4">
-
+      <CardContent dir='rtl'>
+        <p className="text-sm text-muted-foreground line-clamp-2  my-2">
           {expense.description}
         </p>
         <div className="flex justify-between items-center mt-5"
