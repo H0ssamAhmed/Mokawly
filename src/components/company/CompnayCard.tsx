@@ -5,22 +5,19 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Edit, Settings, Trash } from 'lucide-react';
 import { CompanyType } from '@/types/CompanyTypes';
 import { useMutation } from "convex/react";
-import { api } from "../../convex/_generated/api";
+import { api } from "../../../convex/_generated/api";
 
-import { Button } from './ui/button';
-import { Label } from './ui/label';
-import { Input } from './ui/input';
+import { Button } from '../ui/button';
+import { Label } from '../ui/label';
+import { Input } from '../ui/input';
 import toast from 'react-hot-toast';
-import { Textarea } from './ui/textarea';
-import SpinnerLoader from './SpinnerLoader';
+import { Textarea } from '../ui/textarea';
+import SpinnerLoader from '../SpinnerLoader';
 interface Props {
   company: CompanyType,
   resetForm: () => void
   setFormData: React.Dispatch<React.SetStateAction<CompanyType | null>>
   formData: CompanyType,
-  // setEditingCompany: React.Dispatch<React.SetStateAction<CompanyType | null>>
-  // setIsDialogOpen: React.Dispatch<React.SetStateAction<boolean>>
-
 }
 const CompnayCard = ({ company, resetForm, setFormData, formData, }: Props) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);

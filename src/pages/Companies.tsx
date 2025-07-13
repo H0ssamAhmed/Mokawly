@@ -1,18 +1,18 @@
 
 import React, { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Plus, Edit, Trash, Settings } from "lucide-react";
+import { Plus, Settings } from "lucide-react";
 import { CompanyType } from "@/types/CompanyTypes";
 import { Textarea } from "@/components/ui/textarea";
 import toast from "react-hot-toast";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import SpinnerLoader from "@/components/SpinnerLoader";
-import CompnayCard from "@/components/CompnayCard";
+import CompnayCard from "@/components/company/CompnayCard";
 
 
 export default function Companies() {
@@ -22,8 +22,6 @@ export default function Companies() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isAdding, setIsAdding] = useState(false);
-  const [editingCompany, setEditingCompany] = useState<CompanyType | null>(null);
-
   const [formData, setFormData] = useState<CompanyType>({
     name: "",
     person_one: "",
@@ -32,7 +30,6 @@ export default function Companies() {
     person_two_phone: "",
     note: "",
   });
-
   React.useEffect(() => {
     if (getCompnaies) {
       setCompanies(getCompnaies.companies);
@@ -217,7 +214,6 @@ export default function Companies() {
             setFormData={setFormData}
             company={company}
             resetForm={resetForm}
-          // setEditingCompany={setEditingCompany}
           />
         ))}
       </div>

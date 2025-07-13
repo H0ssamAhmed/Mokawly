@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,11 +12,11 @@ import { api } from '../../convex/_generated/api';
 import { useMutation, useQuery } from "convex/react";
 import { WorkerType } from "@/types/SharedTypes";
 import ReqiureInputSgin from "@/components/ReqiureInputSgin";
-import WorkerCard from "@/components/WorkerCard";
+import WorkerCard from "@/components/worker/WorkerCard";
 import SpinnerLoader from "@/components/SpinnerLoader";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
-import WorkerList from "@/components/WorkerList";
+import WorkerList from "@/components/worker/WorkerList";
 
 
 

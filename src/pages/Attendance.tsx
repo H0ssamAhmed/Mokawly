@@ -14,26 +14,21 @@ import SpinnerLoader from "@/components/SpinnerLoader";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import toast from "react-hot-toast";
-import { useIsMobile } from "@/hooks/use-mobile";
-import DayAttendanceRecord from "@/components/DayAttendanceRecord";
+import DayAttendanceRecord from "@/components/attendance/DayAttendanceRecord";
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogClose } from "@/components/ui/dialog";
-import SearchedDayRecord from "@/components/SearchedDayRecord";
+import SearchedDayRecord from "@/components/attendance/SearchedDayRecord";
 
 export default function Attendance() {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [presentWorkers, setPresentWorkers] = useState<string[]>([]);
   const getAllWorkers = useQuery(api.worker.getWorkers);
-  // const getAllattendances = useQuery(api.attendance.getAttendanceRecords);
   const saveDailyAttendances = useMutation(api.attendance.saveAttendances);
   const SearchAttendanceByDate = useMutation(api.attendance.getAttendanceByDate);
-
   const [loading, setLoading] = useState<boolean>(true);
   const [isAdding, setIsAdding] = useState<boolean>(false);
   const [workers, setWorkers] = useState<WorkerType[]>([])
   const [dialynote, setDialynote] = useState<string>("")
-  // const [attendanceRecords, setAttendanceRecords] = useState<AttendanceRecord[]>([]);
   const [isPopOverOpen, setIsPopOverOpen] = useState<boolean>(false)
-  const isMobile = useIsMobile()
   const [searchDialogOpen, setSearchDialogOpen] = useState(false);
   const [searchDate, setSearchDate] = useState<Date | null>(null);
   const [isSearchLoading, setIsSearchLoading] = useState<boolean>(false);
@@ -41,22 +36,16 @@ export default function Attendance() {
   const [searchedAttendance, setSearchedAttendance] = useState<DilayAttendance[]>([]);
   const [searchedDayName, setSearchedDayName] = useState<string>("");
 
-  // Mock workers data
   useEffect(() => {
     if (getAllWorkers) {
       setWorkers(getAllWorkers.workers);
     }
-    // if (getAllattendances) {
-    //   setAttendanceRecords(getAllattendances.records);
-    // }
     if (getAllWorkers) {
       setLoading(false);
     }
   }, [getAllWorkers])
-  // Mock attendance records
 
   const toggleWorkerAttendance = (workerId: string, worker: WorkerType) => {
-
     setPresentWorkers(prev =>
       prev.includes(workerId)
         ? prev.filter(id => id !== workerId)

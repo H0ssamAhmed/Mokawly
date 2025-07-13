@@ -12,10 +12,10 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import { useMutation, useQuery } from "convex/react";
 import SpinnerLoader from "@/components/SpinnerLoader";
-import JobExpensesCard from "@/components/JobExpensesCard";
+import JobExpensesCard from "@/components/worker/JobExpensesCard";
 import CustomDayPicker from "@/components/CustomDayPicker";
 import { JobExpense, WorkerExpense } from "@/types/SharedTypes";
-import WorkerExpensesCard from "@/components/WorkerExpensesCard";
+import WorkerExpensesCard from "@/components/expense/WorkerExpensesCard";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -54,6 +54,8 @@ export default function Expenses() {
   const [isLoadingInitialData, setIsLoadingInitialData] = useState<boolean>(true);
   const [workerExpenses, setWorkerExpenses] = useState<WorkerExpense[]>([]);
   const [isJobDialogOpen, setIsJobDialogOpen] = useState(false);
+  const [isWorkDialogOpen, setIsWorkDialogOpen] = useState(false);
+  const [isDateDialogOpen, setIsDateDialogOpen] = useState(false);
   const [isWorkerDialogOpen, setIsWorkerDialogOpen] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams()
   const [activeTab, setActiveTab] = useState<string>(searchParams.get("tab") || "job");
@@ -196,6 +198,21 @@ export default function Expenses() {
     setJobExpenses(filteredExpenses);
 
   }
+
+  const handleChangeWorkerDateExpense = (date: Date) => {
+    if (date) {
+      setWorkerFormData({ ...workerFormData, date })
+      setIsDateDialogOpen(false)
+    }
+  }
+  const handleChangeJobDateExpense = (date: Date) => {
+    if (date) {
+      setJobFormData({ ...jobFormData, date })
+      setIsJobDialogOpen(false)
+      setIsDateDialogOpen(false)
+
+    }
+  }
   return (
     <div className="container p-4 lg:p-6 space-y-6" dir="rtl">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -252,8 +269,6 @@ export default function Expenses() {
             size={80}
           />
         </Card>
-
-
       </div>
 
       <Tabs value={activeTab} defaultValue={activeTab} className="space-y-6">
@@ -351,7 +366,7 @@ export default function Expenses() {
                         </PopoverTrigger>
                         <PopoverContent className="w-auto p-0" align="start">
                           <CustomDayPicker
-                            OnSelectFn={(date) => date && setJobFormData({ ...jobFormData, date })}
+                            OnSelectFn={(date) => handleChangeJobDateExpense(date)}
                             selectedDate={jobFormData.date}
                           />
                         </PopoverContent>
@@ -489,7 +504,7 @@ export default function Expenses() {
 
                     <div className="space-y-2">
                       <Label>التاريخ *</Label>
-                      <Popover>
+                      <Popover open={isDateDialogOpen} onOpenChange={setIsDateDialogOpen}>
                         <PopoverTrigger asChild>
                           <Button
                             variant="outline"
@@ -504,7 +519,7 @@ export default function Expenses() {
                         </PopoverTrigger>
                         <PopoverContent className="w-auto p-0" align="start">
                           <CustomDayPicker
-                            OnSelectFn={(date) => date && setWorkerFormData({ ...workerFormData, date })}
+                            OnSelectFn={(date) => handleChangeWorkerDateExpense(date)}
                             selectedDate={workerFormData.date}
                           />
 

@@ -61,7 +61,7 @@ export const updateCompany = mutation({
     const updatedCompany = await ctx.db.get(id);
     return {
       ok: true,
-      message: `تم تحديث معلةمات شركة  ${updatedCompany.name} بنجاح`,
+      message: `تم تحديث معلومات شركة  ${updatedCompany.name} بنجاح`,
       company: updatedCompany,
     };
   },

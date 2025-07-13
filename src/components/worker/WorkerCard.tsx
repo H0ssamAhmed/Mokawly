@@ -1,25 +1,25 @@
 import { WorkerType } from '@/types/SharedTypes'
 import React from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '../ui/card'
 import { Copy, Edit, Flame, Trash, User } from 'lucide-react'
-import { Badge } from './ui/badge'
-import { Switch } from './ui/switch'
+import { Badge } from '../ui/badge'
+import { Switch } from '../ui/switch'
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
-import { Button } from './ui/button'
+import { Button } from '../ui/button'
 import { useMutation } from 'convex/react'
-import { api } from '../../convex/_generated/api';
+import { api } from '../../../convex/_generated/api';
 import { cn } from '@/lib/utils'
-import { AlertDialog, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger, AlertDialogCancel } from './ui/alert-dialog'
+import { AlertDialog, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger, AlertDialogCancel } from '../ui/alert-dialog'
 import { toast } from 'sonner'
-import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip'
-import ReqiureInputSgin from './ReqiureInputSgin'
-import { Textarea } from './ui/textarea'
+import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip'
+import ReqiureInputSgin from '../ReqiureInputSgin'
+import { Textarea } from '../ui/textarea'
 import { Link } from 'react-router-dom'
-import CustomBadge from './CustomBadge'
+import CustomBadge from '../CustomBadge'
 interface Props {
   worker: WorkerType,
   formData: WorkerType,

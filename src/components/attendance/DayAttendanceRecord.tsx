@@ -1,7 +1,7 @@
 import { WorkerType } from '@/types/SharedTypes'
 import React from 'react'
-import { Checkbox } from './ui/checkbox'
-import CustomBadge from './CustomBadge'
+import { Checkbox } from '../ui/checkbox'
+import CustomBadge from '../CustomBadge'
 
 interface Props {
   worker: WorkerType,

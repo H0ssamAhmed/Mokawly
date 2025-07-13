@@ -12,11 +12,11 @@ import {
 import { format } from 'date-fns';
 import { ar } from 'date-fns/locale';
 import { useMutation } from 'convex/react';
-import { api } from '../../convex/_generated/api';
-import { Button } from './ui/button';
+import { api } from '../../../convex/_generated/api';
+import { Button } from '../ui/button';
 import toast from 'react-hot-toast';
-import SpinnerLoader from './SpinnerLoader';
-import { useAuth } from './auth-provider';
+import SpinnerLoader from '../SpinnerLoader';
+import { useAuth } from '../auth-provider';
 
 const ExpensesTable = ({ workerExpenses, amountsReceived, totalEarned }) => {
   const deleteWorkerExp = useMutation(api.expenses.deleteWorkerExpense)

@@ -11,13 +11,13 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { format } from "date-fns";
 
 import { useMutation, useQuery } from "convex/react";
-import { api } from "../../convex/_generated/api";
+import { api } from "../../../convex/_generated/api";
 import { CalendarIcon, Plus, Settings } from "lucide-react";
 import { Payment } from '@/types/Payment';
 import toast from 'react-hot-toast';
 import { CompanyType } from '@/types/CompanyTypes';
-import SpinnerLoader from './SpinnerLoader';
-import CustomDayPicker from './CustomDayPicker';
+import SpinnerLoader from '../SpinnerLoader';
+import CustomDayPicker from '../CustomDayPicker';
 import { cn } from '@/lib/utils';
 const AddPayment = ({ companies }: { companies: CompanyType[] }) => {
 

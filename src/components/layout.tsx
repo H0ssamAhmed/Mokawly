@@ -13,6 +13,7 @@ import {
 import { Home, Users, Calendar, Settings, Menu, LogOut, Sun, Moon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import ThemeToggler from "./ThemeToggler";
+import Logo from "./Logo";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const { user, logout } = useAuth();
@@ -40,9 +41,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           >
             <Menu className="h-5 w-5" />
           </Button>
-
-          <h1 className="text-lg font-semibold">إدارة الطلاء</h1>
-
+          <Logo />
           <div className="flex items-center gap-2">
             <ThemeToggler />
 
@@ -95,7 +94,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       <div className="hidden lg:flex">
         <div className="flex flex-col w-64 bg-card sticky top-0 h-screen border-l border-border">
           <div className="flex items-center justify-between p-6 border-b border-border">
-            <h1 className="text-xl font-bold">إدارة الطلاء</h1>
+            <Logo />
             <ThemeToggler />
           </div>
 

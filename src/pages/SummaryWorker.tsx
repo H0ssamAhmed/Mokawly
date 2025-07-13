@@ -9,9 +9,9 @@ import { api } from '../../convex/_generated/api';
 import { AttendanceRecord, WorkerExpense, WorkerType } from '@/types/SharedTypes';
 import { cn } from '@/lib/utils';
 import AttendanceTable from '@/components/AttendanceTable';
-import ExpensesTable from '@/components/ExpensesTable';
+import ExpensesTable from '@/components/expense/ExpensesTable';
 import CustomBadge from '@/components/CustomBadge';
-import WorkerNote from '@/components/WorkerNote';
+import WorkerNote from '@/components/worker/WorkerNote';
 
 
 const SummaryWorker = () => {

@@ -1,6 +1,6 @@
 import { DilayAttendance } from '@/types/SharedTypes'
 import React from 'react'
-import { Card, CardHeader, CardTitle } from './ui/card'
+import { Card, CardHeader, CardTitle } from '../ui/card'
 
 const SearchedDayRecord = ({ recorder }: { recorder: DilayAttendance }) => {
   return (

@@ -1,17 +1,16 @@
 
 import { useEffect, useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Plus, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { Payment } from "@/types/Payment";
-import AddPayment from "@/components/AddPayment";
+import AddPayment from "@/components/payment/AddPayment";
 import { CompanyType } from "@/types/CompanyTypes";
-import PaymentItem from "@/components/PaymentItem";
+import PaymentItem from "@/components/payment/PaymentItem";
 import { Skeleton } from "@/components/ui/skeleton";
-import SpinnerLoader from "@/components/SpinnerLoader";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 
 
