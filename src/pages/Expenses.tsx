@@ -208,7 +208,6 @@ export default function Expenses() {
   const handleChangeJobDateExpense = (date: Date) => {
     if (date) {
       setJobFormData({ ...jobFormData, date })
-      setIsJobDialogOpen(false)
       setIsDateDialogOpen(false)
 
     }
@@ -351,7 +350,7 @@ export default function Expenses() {
 
                     <div className="space-y-2">
                       <Label>التاريخ *</Label>
-                      <Popover>
+                      <Popover open={isDateDialogOpen} onOpenChange={setIsDateDialogOpen}>
                         <PopoverTrigger asChild>
                           <Button
                             variant="outline"
