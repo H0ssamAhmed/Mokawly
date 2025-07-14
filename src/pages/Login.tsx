@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { toast } from "@/hooks/use-toast";
+import Logo from "@/components/Logo";
 
 export default function Login() {
   const { user, login } = useAuth();
@@ -51,7 +52,7 @@ export default function Login() {
     <div className="min-h-screen flex items-center justify-center bg-muted/30 p-4" dir="rtl">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold">إدارة الطلاء</CardTitle>
+          <CardTitle><Logo /></CardTitle>
           <CardDescription>
             سجل دخولك إلى لوحة إدارة المشاريع
           </CardDescription>
@@ -88,7 +89,7 @@ export default function Login() {
               {isLoading ? "جاري تسجيل الدخول..." : "تسجيل الدخول"}
             </Button>
           </form>
-          
+
           <div className="mt-6 p-4 bg-muted rounded-lg">
             <p className="text-sm text-muted-foreground mb-2">بيانات تجريبية:</p>
             <p className="text-sm font-mono" dir="ltr">Email: admin@paintingapp.com</p>

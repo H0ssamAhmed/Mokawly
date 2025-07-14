@@ -1,8 +1,8 @@
-# PaintTrack - Painting Contractor Management System
+# Mokawly - Contractor Management System
 
 ## Overview
 
-PaintTrack is a comprehensive web-based system designed to help painting contractors manage their day-to-day operations. Whether you're handling multiple jobs from different companies or managing a team of workers and craftsmen, this system simplifies everything in one place.
+Mokawly is a comprehensive web-based system designed to help contractors manage their day-to-day operations. Whether you're handling multiple jobs from different companies or managing a team of workers and craftsmen, this system simplifies everything in one place.
 
 ## Key Features
 
@@ -87,7 +87,7 @@ PaintTrack is a comprehensive web-based system designed to help painting contrac
 ## Project Structure
 
 ```
-PaintTrack/
+Mokawly/
 ├── convex/                     # Backend & Database
 │   ├── _generated/           # Generated Convex files
 │   ├── schema.ts             # Database schema
@@ -266,7 +266,7 @@ PaintTrack/
 
 ```bash
 git clone <repository-url>
-cd PaintTrack
+cd Mokawly
 ```
 
 2. **Install dependencies**
@@ -529,7 +529,7 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 - Convex team for the excellent real-time database
 - shadcn/ui for the beautiful component library
 - React team for the amazing framework
-- All contributors and users of PaintTrack
+- All contributors and users of Mokawly
 
 ---
 
