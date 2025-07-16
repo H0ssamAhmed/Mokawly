@@ -1,23 +1,48 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DollarSign, Settings, Trash2Icon } from 'lucide-react';
 import { useMutation } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
 import { format } from 'date-fns';
+import { useQueryClient } from '@tanstack/react-query';
+import { Skeleton } from '../ui/skeleton';
+import toast from 'react-hot-toast';
 
 const JobExpensesCard = ({ expense }) => {
+  const queryClient = useQueryClient();
+  const [isDeleting, setIsDeleteing] = useState(false)
+
   const deleteJobExp = useMutation(api.expenses.deleteJobExpense)
 
   const handleDelteJobExpense = (id: string) => {
-    // const isOk = confirm("هل تريد حذف هذا المصروف؟")
-    // if (isOk) {
+    setIsDeleteing(true)
+
     deleteJobExp({ id })
-    //   return
-    // }
+      .then((res) => {
+        if (res.ok) {
+          toast.success(res.message, {
+            icon: "✅",
+          })
+          queryClient.invalidateQueries({ queryKey: ['jobExpenses'] });
+        }
+      })
+      .catch((err) => {
+        toast.error("حدث خطأ اثناء حذف العميل. حاول مرة اخري", {
+          duration: 5000,
+          icon: "❌",
+          style: {
+            color: "red"
+          }
+        })
+      })
+      .finally(() => {
+        setIsDeleteing(false);
+      });
   }
+  if (isDeleting) return <Skeleton className='w-72  h-40' />
 
   return (
-    <Card key={expense._id} className='w-72'>
+    <Card dir='rtl' key={expense._id} className='w-72'>
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-2">

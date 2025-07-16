@@ -17,16 +17,21 @@ import toast from "react-hot-toast";
 import DayAttendanceRecord from "@/components/attendance/DayAttendanceRecord";
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogClose } from "@/components/ui/dialog";
 import SearchedDayRecord from "@/components/attendance/SearchedDayRecord";
+import { useWorkers } from "../api/workerApi.js";
+import { useQueryClient } from "@tanstack/react-query";
+
 
 export default function Attendance() {
+  const queryClient = useQueryClient();
+  const { isLoading, data } = useWorkers()
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [presentWorkers, setPresentWorkers] = useState<string[]>([]);
   const getAllWorkers = useQuery(api.worker.getWorkers);
   const saveDailyAttendances = useMutation(api.attendance.saveAttendances);
   const SearchAttendanceByDate = useMutation(api.attendance.getAttendanceByDate);
-  const [loading, setLoading] = useState<boolean>(true);
   const [isAdding, setIsAdding] = useState<boolean>(false);
-  const [workers, setWorkers] = useState<WorkerType[]>([])
+  const [workers, setWorkers] = useState<WorkerType[]>(data?.workers || [])
+
   const [dialynote, setDialynote] = useState<string>("")
   const [isPopOverOpen, setIsPopOverOpen] = useState<boolean>(false)
   const [searchDialogOpen, setSearchDialogOpen] = useState(false);
@@ -37,14 +42,10 @@ export default function Attendance() {
   const [searchedDayName, setSearchedDayName] = useState<string>("");
 
   useEffect(() => {
-    if (getAllWorkers) {
-      setWorkers(getAllWorkers.workers);
+    if (data) {
+      setWorkers(data.workers)
     }
-    if (getAllWorkers) {
-      setLoading(false);
-    }
-  }, [getAllWorkers])
-
+  }, [data])
   const toggleWorkerAttendance = (workerId: string, worker: WorkerType) => {
     setPresentWorkers(prev =>
       prev.includes(workerId)
@@ -251,8 +252,8 @@ export default function Attendance() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4 h-fit max-h-[1500px] overflow-y-scroll">
-              {loading && <SpinnerLoader />}
-              {!loading && workers.map((worker) => (
+              {isLoading && <SpinnerLoader />}
+              {!isLoading && workers.map((worker) => (
                 <DayAttendanceRecord
                   key={worker._id}
                   worker={worker}

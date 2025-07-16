@@ -17,8 +17,8 @@ import SpinnerLoader from "@/components/SpinnerLoader";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import WorkerList from "@/components/worker/WorkerList";
-import { useWorkers } from "../api/workerApi.js";
 import WorkerSkeleton from "@/components/worker/WorkerSkeleton";
+import { useWorkers } from "../api/workerApi.js";
 import { useQueryClient } from "@tanstack/react-query";
 
 
@@ -29,7 +29,7 @@ export default function Workers() {
   const { isLoading, data } = useWorkers()
 
   const addWorker = useMutation(api.worker.addWorker);
-  const [workers, setWorkers] = useState<WorkerType[]>(data.workers || [])
+  const [workers, setWorkers] = useState<WorkerType[]>(data?.workers || [])
   const [isAdding, setIsAdding] = useState<boolean>(false)
   const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
   const [itemsView, setItemsView] = useState<string>("grid")

@@ -12,7 +12,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import { useMutation, useQuery } from "convex/react";
 import SpinnerLoader from "@/components/SpinnerLoader";
-import JobExpensesCard from "@/components/worker/JobExpensesCard";
+import JobExpensesCard from "@/components/expense/JobExpensesCard.js";
 import CustomDayPicker from "@/components/CustomDayPicker";
 import { JobExpense, WorkerExpense } from "@/types/SharedTypes";
 import WorkerExpensesCard from "@/components/expense/WorkerExpensesCard";
@@ -23,9 +23,9 @@ import { ArrowDown, CalendarIcon, Loader2, MousePointerClick, Plus } from "lucid
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { useJobExpenses, useWorkerExpenses } from "../api/expenseApi.js";
+import { useQueryClient } from "@tanstack/react-query";
 
-
-// Mock workers data
 
 const expenseTypes = [
   "المواصلات",
@@ -42,19 +42,18 @@ const paidBy = [
   "السيد عاطف",
 ];
 export default function Expenses() {
+  const queryClient = useQueryClient();
+  const { isLoading: isLoadingWorkerExpenses, data: getAllWorkerExpenses } = useWorkerExpenses()
+  const { isLoading: isLoadingJobExpenses, data: getAllJobExpenses } = useJobExpenses()
   const addNewWorkerExpense = useMutation(api.expenses.AddworkerExpense);
   const addNewJobExpense = useMutation(api.expenses.addJobExpense);
-  const getAllWorkerExpenses = useQuery(api.expenses.getWorkerExpenses);
-  const getAllJobExpenses = useQuery(api.expenses.getJobExpenses);
   const existWorkers = useQuery(api.worker.getWorkers);
-  const [jobExpenses, setJobExpenses] = useState<JobExpense[]>([]);
+  const [jobExpenses, setJobExpenses] = useState<JobExpense[]>(getAllJobExpenses?.expenses || []);
+  const [workerExpenses, setWorkerExpenses] = useState<WorkerExpense[]>(getAllWorkerExpenses?.expenses || []);
   const [totalWorkerExpenses, setTotalWorkerExpenses] = useState<number>(0)
   const [totalJobExpenses, setTotalJobExpenses] = useState<number>(0)
   const [loadingAddExpenses, setLoadingAddExpenses] = useState<boolean>(false);
-  const [isLoadingInitialData, setIsLoadingInitialData] = useState<boolean>(true);
-  const [workerExpenses, setWorkerExpenses] = useState<WorkerExpense[]>([]);
   const [isJobDialogOpen, setIsJobDialogOpen] = useState(false);
-  const [isWorkDialogOpen, setIsWorkDialogOpen] = useState(false);
   const [isDateDialogOpen, setIsDateDialogOpen] = useState(false);
   const [isWorkerDialogOpen, setIsWorkerDialogOpen] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams()
@@ -67,7 +66,6 @@ export default function Expenses() {
   useEffect(() => {
     if (existWorkers) {
       setWorkers(existWorkers.workers);
-
     }
     if (getAllJobExpenses) {
       setJobExpenses(getAllJobExpenses.expenses);
@@ -79,9 +77,7 @@ export default function Expenses() {
       const total = getAllWorkerExpenses.expenses.reduce((sum, expense) => sum + expense.amount, 0);
       setTotalWorkerExpenses(total)
     }
-    if (existWorkers && getAllJobExpenses && getAllWorkerExpenses) {
-      setIsLoadingInitialData(false)
-    }
+
   }, [existWorkers, getAllJobExpenses, getAllWorkerExpenses])
   const resetJobForm = () => {
     setJobFormData({
@@ -126,11 +122,12 @@ export default function Expenses() {
     };
     setLoadingAddExpenses(true);
     addNewJobExpense(newExpense)
-      .then(() => {
+      .then((res) => {
         toast.success(<h1>تم اضافة حساب   <b>{" " + jobFormData.type + " "} </b>  بنجاح</h1>, {
           icon: "✅",
           duration: 3000,
         });
+        queryClient.invalidateQueries({ queryKey: ['jobExpenses'] });
       }).catch((error) => {
         toast.error(<h1>حدث خطأ, {error.message}</h1>, {
           icon: "❌",
@@ -140,15 +137,11 @@ export default function Expenses() {
         setIsJobDialogOpen(false);
         resetWorkerForm();
         setLoadingAddExpenses(false);
-
       });
-
   };
 
   const handleWorkerSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-
-
     if (!workerFormData.workerId) {
       toast.error("يرجى اختيار  العامل");
       return;
@@ -168,11 +161,15 @@ export default function Expenses() {
     };
     setLoadingAddExpenses(true);
     addNewWorkerExpense(newExpense)
-      .then(() => {
+      .then((res) => {
+        ;
         toast.success(<h1>تم اضافة المصروف  بإسم  <b>{" " + workerFormData.workerName + " "} </b>  بنجاح</h1>, {
           icon: "✅",
           duration: 3000,
-        });
+        })
+        queryClient.invalidateQueries({ queryKey: ['workerExpenses'] });
+
+
       }).catch((error) => {
         toast.error(<h1>حدث خطأ, {error.message}</h1>, {
           icon: "❌",
@@ -229,7 +226,7 @@ export default function Expenses() {
             <CardTitle className="text-sm font-medium text-muted-foreground">إجمالي مصروفات العمال</CardTitle>
           </CardHeader>
           <CardContent>
-            {isLoadingInitialData
+            {isLoadingWorkerExpenses
               ?
               <Skeleton className="w-1/3 mt-4 h-8 bg-muted-foreground" />
               :
@@ -254,7 +251,7 @@ export default function Expenses() {
             <CardTitle className="text-sm font-medium text-muted-foreground">إجمالي مصروفات العمل</CardTitle>
           </CardHeader>
           <CardContent>
-            {isLoadingInitialData
+            {isLoadingJobExpenses
               ?
               <Skeleton className="w-1/3 mt-4 h-8 bg-muted-foreground" />
               :
@@ -384,7 +381,7 @@ export default function Expenses() {
               </DialogContent>
             </Dialog>
             <div className="flex items-center gap-4">
-              <DropdownMenu>
+              <DropdownMenu dir="rtl">
                 <DropdownMenuTrigger>
 
                   <Button variant="outline">
@@ -411,14 +408,13 @@ export default function Expenses() {
             </div>
           </div>
           <hr className='w-full' />
-          {isLoadingInitialData && <SpinnerLoader />}
-          {!jobExpenses.length && !isLoadingInitialData && <EmptyData />}
-          {/* <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"> */}
+          {isLoadingJobExpenses && <SpinnerLoader />}
+          {!jobExpenses.length && !isLoadingJobExpenses && <EmptyData />}
+
           <div className="flex flex-wrap justify-center items-center  flex-row-reverse gap-4">
             {jobExpenses.reverse().map(expense => <JobExpensesCard expense={expense} key={expense._id} />)}
           </div>
         </TabsContent>
-
         <TabsContent value="worker" className="space-y-6">
           <div className="flex gap-y-5 flex-col-reverse md:flex-row justify-between items-center">
             <Dialog open={isWorkerDialogOpen} onOpenChange={setIsWorkerDialogOpen}>
@@ -544,9 +540,8 @@ export default function Expenses() {
             </div>
           </div>
           <hr className='w-full' />
-          {isLoadingInitialData && <SpinnerLoader />}
-          {!workerExpenses.length && !isLoadingInitialData && <EmptyData />}
-          {/* <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"> */}
+          {isLoadingWorkerExpenses && <SpinnerLoader />}
+          {!workerExpenses.length && !isLoadingWorkerExpenses && <EmptyData />}
           <div className="flex flex-wrap justify-center items-center  flex-row-reverse gap-4">
             {workerExpenses.reverse().map(expense => <WorkerExpensesCard expense={expense} key={expense._id} />)}
           </div>

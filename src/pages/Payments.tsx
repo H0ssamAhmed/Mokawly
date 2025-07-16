@@ -11,7 +11,9 @@ import { CompanyType } from "@/types/CompanyTypes";
 import PaymentItem from "@/components/payment/PaymentItem";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-
+import { useQueryClient } from "@tanstack/react-query";
+import { usePayments } from "../api/paymentApi.js";
+import { useCompanies } from "../api/companyApi.js";
 
 
 interface CompanyPayment extends CompanyType {
@@ -21,33 +23,26 @@ interface CompanyPayment extends CompanyType {
 
 
 export default function Payments() {
-  const [payments, setPayments] = useState<Payment[]>([]);
-  const [companies, setCompanies] = useState([]);
+  const queryClient = useQueryClient();
+  const { isLoading: isLoadingPayments, data: getPayments } = usePayments()
+  const { isLoading: isLoadingCompanies, data: getCompnaies } = useCompanies()
+
+  const [payments, setPayments] = useState<Payment[]>(getPayments?.payments || []);
+  const [companies, setCompanies] = useState(getCompnaies?.companies || []);
   const [showPayments, setShowPayemnts] = useState<boolean>(true);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
   const [categorisedpaymentsByCompany, setCategorisedpaymentsByCompany] = useState<CompanyPayment[]>([]);
-  const getCompnaies = useQuery(api.company.getCompanies)
-  const getPayments = useQuery(api.payment.getAllPayments)
 
   useEffect(() => {
     if (getCompnaies) {
       setCompanies(getCompnaies.companies);
-
     }
     if (getPayments) {
       setPayments(getPayments.payments)
     }
-    if (getPayments && getCompnaies) {
-      setIsLoading(false);
-    }
+
   }, [getCompnaies, getPayments])
 
-
-
   const totalPayments = payments.reduce((sum, payment) => sum + payment.amount, 0)
-
-
-
 
   // Group payments by company 
   useEffect(() => {
@@ -75,7 +70,7 @@ export default function Payments() {
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-green-600">
-              {isLoading
+              {isLoadingPayments
                 ? <Skeleton className="w-1/3 mt-4 h-8 bg-muted-foreground" />
                 :
                 totalPayments.toLocaleString('ar-SA') + " ر.س"
@@ -91,7 +86,7 @@ export default function Payments() {
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-green-600">
-              {isLoading
+              {isLoadingCompanies
                 ? <Skeleton className="w-1/3 mt-4 h-8 bg-muted-foreground" />
                 :
                 payments.length + " دفعة"
@@ -110,7 +105,7 @@ export default function Payments() {
         <CardContent>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {isLoading
+            {isLoadingCompanies && isLoadingPayments
               ? Array.from({ length: 6 }).map((_, indx) => (<Skeleton key={indx} className="w-full mt-4 h-20 bg-muted-foreground " />))
               : categorisedpaymentsByCompany.map((company) => (
                 <div key={company._id} className="p-4 border rounded-lg">
@@ -134,35 +129,40 @@ export default function Payments() {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>المدفوعات الأخيرة</CardTitle>
-
           <Button
             onClick={() => setShowPayemnts(!showPayments)}
             variant="ghost" className="text-muted-foreground">
-            {showPayments ? "اظهار" : "اخفاء"} المدفوعات
+            {showPayments ? "اخفاء" : "اظهار"} المدفوعات
           </Button>
         </CardHeader>
-        {<CardContent
+
+        <CardContent
           className={cn("animate-fade-in max-h-96 h-fit overflow-y-scroll",
-            showPayments && "hidden"
+            !showPayments && "hidden"
           )}
         >
-          <div className="space-y-4">
-            {!payments.length &&
-              <div className="flex flex-col items-center justify-center gap-4">
-                <p>لا يوجد دفعات</p>
-                <Button>
-                  <Plus className="mr-2 h-4 w-4" />
-                  تسجيل دفعة
-                </Button>
-              </div>
-            }
-            {payments && payments
-              .sort((a, b) => b._creationTime - a._creationTime)
-              .map((payment) => (
-                <PaymentItem key={payment._id} payment={payment} companies={companies} />
-              ))}
-          </div>
-        </CardContent>}
+          {isLoadingPayments ?
+            Array.from({ length: 4 })
+              .map((_) => (<Skeleton className="w-full mt-4 h-20 bg-muted-foreground" />))
+            :
+            <div className="space-y-4">
+              {!payments.length &&
+                <div className="flex flex-col items-center justify-center gap-4">
+                  <p>لا يوجد دفعات</p>
+                  <Button>
+                    <Plus className="mr-2 h-4 w-4" />
+                    تسجيل دفعة
+                  </Button>
+                </div>
+              }
+              {payments && payments
+                .sort((a, b) => b._creationTime - a._creationTime)
+                .map((payment) => (
+                  <PaymentItem key={payment._id} payment={payment} companies={companies} />
+                ))}
+            </div>
+          }
+        </CardContent>
       </Card>
     </div>
   );
