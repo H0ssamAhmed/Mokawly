@@ -6,13 +6,13 @@ import { Edit, Settings, Trash } from 'lucide-react';
 import { CompanyType } from '@/types/CompanyTypes';
 import { useMutation } from "convex/react";
 import { api } from "../../../convex/_generated/api";
-
 import { Button } from '../ui/button';
 import { Label } from '../ui/label';
 import { Input } from '../ui/input';
 import toast from 'react-hot-toast';
 import { Textarea } from '../ui/textarea';
 import SpinnerLoader from '../SpinnerLoader';
+
 interface Props {
   company: CompanyType,
   resetForm: () => void
@@ -76,7 +76,6 @@ const CompnayCard = ({ company, resetForm, setFormData, formData, }: Props) => {
       person_two_phone: formData.person_two_phone,
       note: formData.note,
     };
-    console.log({ ...companyData, id: company._id });
 
     updateExitingCompany({ ...companyData, id: company._id })
       .then((res) => {
@@ -88,9 +87,7 @@ const CompnayCard = ({ company, resetForm, setFormData, formData, }: Props) => {
         }
       })
       .catch((err) => console.log(err))
-      .finally(() => {
-        console.log('done');
-      })
+      .finally(() => { })
     resetForm();
     setIsDialogOpen(false)
   };

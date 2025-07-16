@@ -53,7 +53,7 @@ export const updateWorker = mutation({
     const existingWorker = await ctx.db.get(id);
     await ctx.db.patch(existingWorker._id, updates);
     const updatedWorker = await ctx.db.get(id);
-    return { ok: true, worker: updatedWorker };
+    return { ok: true, worker: updatedWorker, message: "تم تحديث بيانات العامل بنجاح" };
   },
 
 });
@@ -66,7 +66,7 @@ export const deleteWorker = mutation({
       throw new ConvexError("Worker not found");
     }
     await ctx.db.delete(id);
-    return { ok: true, message: "Worker deleted successfully" };
+    return { ok: true, message: "تم حذف العامل بنجاح" };
   },
 });
 export const publishWorker = mutation({
@@ -78,7 +78,7 @@ export const publishWorker = mutation({
     }
     const reversePublished = existingWorker.isPublished ? false : true;
     await ctx.db.patch(id, { isPublished: reversePublished });
-    return { ok: true, message: "Worker published successfully" };
+    return { ok: true, message: "تم تغيير حالة العامل" };
   },
 })
 

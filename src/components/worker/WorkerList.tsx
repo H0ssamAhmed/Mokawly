@@ -14,20 +14,24 @@ import { useMutation } from 'convex/react'
 import { api } from '../../../convex/_generated/api';
 import { cn } from '@/lib/utils'
 import { AlertDialog, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger, AlertDialogCancel } from '../ui/alert-dialog'
-import { toast } from 'sonner'
+import { toast } from 'react-hot-toast'
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip'
 import ReqiureInputSgin from '../ReqiureInputSgin'
 import { Textarea } from '../ui/textarea'
 import CustomBadge from '../CustomBadge'
+import { useQueryClient } from '@tanstack/react-query'
+import { Skeleton } from '../ui/skeleton'
 interface Props {
   worker: WorkerType,
   formData: WorkerType,
   setFormData: React.Dispatch<React.SetStateAction<WorkerType | null>>,
 }
 const WorkerList = ({ worker, setFormData, formData }: Props) => {
+  const queryClient = useQueryClient();
   const publishWorkerState = useMutation(api.worker.publishWorker);
   const deleteWorker = useMutation(api.worker.deleteWorker);
   const updateWorkerInfo = useMutation(api.worker.updateWorker);
+  const [isChanging, setIsChanging] = React.useState(false);
   const [isUrlCopied, setIsUrlCopied] = React.useState(false);
   const [isEditingWorker, setIsEditingWorker] = React.useState(false);
   const handleEdit = (worker: WorkerType) => {
@@ -36,19 +40,61 @@ const WorkerList = ({ worker, setFormData, formData }: Props) => {
       name: worker.name,
       dailyWage: Number(worker.dailyWage),
       type: worker.type,
-      phone: worker.phone || null,
-      note: worker.note || null,
+      phone: worker.phone || '',
+      note: worker.note || '',
       isPublished: worker.isPublished,
     });
   };
 
   const handleDelete = (id: string) => {
-    deleteWorker({ id }).then(() => {
-
-    })
+    setIsChanging(true);
+    deleteWorker({ id })
+      .then((res) => {
+        if (res.ok) {
+          toast.success(res.message, {
+            duration: 3000,
+            icon: "✅",
+          })
+          queryClient.invalidateQueries({ queryKey: ['getWorkers'] });
+        }
+      })
+      .catch((err) => {
+        toast.error("حدث خطأ اثناء حذف العميل. حاول مرة اخري", {
+          duration: 5000,
+          icon: "❌",
+          style: {
+            color: "red"
+          }
+        })
+      })
+      .finally(() => {
+        setIsChanging(false);
+      })
   }
   const togglePublished = (id: string) => {
+    setIsChanging(true);
     publishWorkerState({ id })
+      .then((res) => {
+        if (res.ok) {
+          toast.success(res.message, {
+            duration: 3000,
+            icon: "✅",
+          })
+          queryClient.invalidateQueries({ queryKey: ['getWorkers'] });
+          setIsChanging(false);
+
+        }
+      }).catch((err) => {
+        toast.error("حدث خطأ اثناء تعديل حالة العميل. حاول مرة اخري", {
+          duration: 5000,
+          icon: "❌",
+          style: {
+            color: "red"
+          }
+        })
+      }).finally(() => {
+        setIsChanging(false);
+      })
   };
 
   const handleCopy = async (id: string) => {
@@ -66,15 +112,14 @@ const WorkerList = ({ worker, setFormData, formData }: Props) => {
     e.preventDefault();
     updateWorkerInfo({ id: worker._id, ...formData })
       .then((res) => {
-        toast.success(<p className=''>تم تحديث <span className='text-green-500'>{res.worker.name}</span> بنجاح</p>, {
-          duration: 3000,
-          icon: "✅",
-          style: {
-            border: "1px solid hsl(var(--secondary))",
-          }
-        })
+        if (res.ok) {
+          toast.success(res.message, {
+            duration: 3000,
+            icon: "✅",
+          })
+          queryClient.invalidateQueries({ queryKey: ['getWorkers'] });
+        }
       }).catch((err) => {
-
         toast.error("حدث خطأ اثناء تعديل البيانات. حاول مرة اخري", {
           duration: 5000,
           icon: "❌",
@@ -89,8 +134,10 @@ const WorkerList = ({ worker, setFormData, formData }: Props) => {
 
   };
 
-  return (
+  if (isChanging) return <Skeleton className='w-full h-52 p-10 ' />
 
+
+  return (
     <Card key={worker._id}>
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">

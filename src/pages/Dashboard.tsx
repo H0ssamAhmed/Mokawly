@@ -8,9 +8,8 @@ import { format } from "date-fns";
 import { CalendarIcon, Download, TrendingUp, TrendingDown, DollarSign, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { DateRange } from "react-day-picker";
-import { useQuery } from "convex/react";
-import { api } from "../../convex/_generated/api";
-import SpinnerLoader from "@/components/SpinnerLoader";
+import { useGetStats } from '../api/dashbordApi.js';
+import DashboardSkeleton from "@/components/dashborad/DashboardSkeleton.js";
 
 export default function Dashboard() {
   const [dateRange, setDateRange] = useState<DateRange | undefined>({
@@ -18,28 +17,19 @@ export default function Dashboard() {
     to: new Date(2024, 11, 31),
   });
   const [profit, setProfit] = useState<number>(0)
-  const [loading, setLoading] = useState<boolean>(true)
-  const getStats = useQuery(api.statistics.getStatistics)
+  const [isPositive, setIsPositive] = useState<boolean>(true)
+  const { isLoading, data } = useGetStats()
 
   useEffect(() => {
-    if (getStats) {
-      const totalProfit = getStats.totalPayment - (getStats.totalJobExpenses + getStats.totalworkersExpenses);
-
+    if (data) {
+      const totalProfit = data.totalPayment - (data.totalJobExpenses + data.totalworkersExpenses);
       setProfit(totalProfit)
-      setLoading(false)
+      setIsPositive(totalProfit >= 0);
     }
-  }, [getStats])
+  }, [data])
 
-  // Mock data - in a real app, this would come from your backend
-  const stats = {
-    totalJobExpenses: 1250.75,
-    totalWorkerExpenses: 2400.00,
-    totalWages: 4200.00,
-    totalPayments: 8500.00,
-  };
 
-  const balance = stats.totalPayments - (stats.totalJobExpenses + stats.totalWorkerExpenses + stats.totalWages);
-  const isPositive = balance >= 0;
+
 
   const handleDateRangeChange = (range: DateRange | undefined) => {
     if (range) {
@@ -47,15 +37,7 @@ export default function Dashboard() {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="h-screen flex flex-col items-center justify-center">
-        <SpinnerLoader parentClassName="m-0 h-fit" />
-        <p>جاري التحميل...</p>
-      </div>
-    )
-
-  }
+  if (isLoading) return <DashboardSkeleton />
 
   return (
     <div className="p-4 lg:p-6 space-y-6" dir="rtl">
@@ -120,7 +102,7 @@ export default function Dashboard() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-red-600">
-                {getStats?.totalJobExpenses.toLocaleString('ar-SA')} ر.س
+                {data?.totalJobExpenses.toLocaleString('ar-SA')} ر.س
               </div>
             </CardContent>
           </Card>
@@ -132,7 +114,7 @@ export default function Dashboard() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-red-600">
-                {getStats?.totalworkersExpenses.toLocaleString('ar-SA')} ر.س
+                {data?.totalworkersExpenses.toLocaleString('ar-SA')} ر.س
               </div>
             </CardContent>
           </Card>
@@ -144,7 +126,7 @@ export default function Dashboard() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-red-600">
-                {getStats?.totalworkerDailyWage.toLocaleString('ar-SA')} ر.س
+                {data?.totalworkerDailyWage.toLocaleString('ar-SA')} ر.س
               </div>
             </CardContent>
           </Card>
@@ -165,7 +147,7 @@ export default function Dashboard() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-green-600">
-                {getStats?.totalPaymentLength.length.toLocaleString('ar-SA')} دفعات
+                {data?.totalPaymentLength.length.toLocaleString('ar-SA')} دفعات
               </div>
             </CardContent>
           </Card>
@@ -177,7 +159,7 @@ export default function Dashboard() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-green-600">
-                {getStats?.totalPayment.toLocaleString('ar-SA')} ر.س
+                {data?.totalPayment.toLocaleString('ar-SA')} ر.س
               </div>
             </CardContent>
           </Card>
@@ -188,7 +170,7 @@ export default function Dashboard() {
             </CardHeader>
             <CardContent>
               <div className={`text-4xl font-bold text-center ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
-                {isPositive ? '+' : ''}{profit.toLocaleString('ar-SA')} ر.س
+                {isPositive ? '' : '-'}{profit.toLocaleString('ar-SA')} ر.س
               </div>
               <p className="text-center text-muted-foreground mt-2">
                 المدفوعات - (مصروفات العمل + مصروفات العمال + الأجور)
@@ -200,43 +182,6 @@ export default function Dashboard() {
 
       </Card>
 
-      {/* Balance Card */}
-
-
-
-      {/* Recent Activity */}
-      {/* <Card>
-        <CardHeader>
-          <CardTitle>النشاط الأخير</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
-              <div>
-                <p className="font-medium">دفعة من شركة البناء الحديث</p>
-                <p className="text-sm text-muted-foreground">١٥ ديسمبر ٢٠٢٤</p>
-              </div>
-              <span className="font-bold text-green-600">+٥٠٠٠ ر.س</span>
-            </div>
-
-            <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
-              <div>
-                <p className="font-medium">مصروف وقود</p>
-                <p className="text-sm text-muted-foreground">١٤ ديسمبر ٢٠٢٤</p>
-              </div>
-              <span className="font-bold text-red-600">-٨٥ ر.س</span>
-            </div>
-
-            <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
-              <div>
-                <p className="font-medium">أجور يوم العمل</p>
-                <p className="text-sm text-muted-foreground">١٤ ديسمبر ٢٠٢٤</p>
-              </div>
-              <span className="font-bold text-red-600">-٤٢٠ ر.س</span>
-            </div>
-          </div>
-        </CardContent>
-      </Card> */}
     </div>
   );
 }

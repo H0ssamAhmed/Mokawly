@@ -13,14 +13,16 @@ import { useMutation, useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import SpinnerLoader from "@/components/SpinnerLoader";
 import CompnayCard from "@/components/company/CompnayCard";
-
+import { useCompanies } from "../api/companyApi.js";
+import { useQueryClient } from "@tanstack/react-query";
 
 export default function Companies() {
-  const [companies, setCompanies] = useState<CompanyType[]>([]);
+  const queryClient = useQueryClient();
+
+  const { isLoading, data } = useCompanies()
+  const [companies, setCompanies] = useState<CompanyType[]>(data?.companies || []);
   const addNewCompany = useMutation(api.company.addCompany);
-  const getCompnaies = useQuery(api.company.getCompanies)
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
   const [isAdding, setIsAdding] = useState(false);
   const [formData, setFormData] = useState<CompanyType>({
     name: "",
@@ -30,12 +32,12 @@ export default function Companies() {
     person_two_phone: "",
     note: "",
   });
+
   React.useEffect(() => {
-    if (getCompnaies) {
-      setCompanies(getCompnaies.companies);
-      setIsLoading(false)
+    if (data) {
+      setCompanies(data.companies);
     }
-  }, [getCompnaies])
+  }, [data])
 
   const resetForm = () => {
     setFormData({
@@ -88,6 +90,7 @@ export default function Companies() {
             icon: "✅",
           })
           resetForm();
+          queryClient.invalidateQueries({ queryKey: ['getCompanies'] });
 
         }
       })
