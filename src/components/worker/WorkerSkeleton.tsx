@@ -1,3 +1,4 @@
+import React from 'react'
 import { Skeleton } from '../ui/skeleton'
 import { useIsMobile } from '@/hooks/use-mobile'
 
@@ -9,8 +10,8 @@ const WorkerSkeleton = () => {
         <h1 className="text-2xl lg:text-3xl font-bold">العاملين</h1>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {Array.from({ length: isMobile ? 4 : 9 }).map((_, indx) => (
-          <Skeleton className='h-40 ' key={indx} />
+        {Array.from({ length: isMobile ? 4 : 9 }).map(() => (
+          <Skeleton className='h-40 ' />
         ))}
       </div>
     </div>

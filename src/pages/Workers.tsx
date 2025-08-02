@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,10 +6,10 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
-import { Grid3X3, Plus, Rows3, User } from "lucide-react";
+import { Grid3X3, Loader, Plus, Rows3, User } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { api } from '../../convex/_generated/api';
-import { useMutation } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import { WorkerType } from "@/types/SharedTypes";
 import ReqiureInputSgin from "@/components/ReqiureInputSgin";
 import WorkerCard from "@/components/worker/WorkerCard";
@@ -17,28 +17,23 @@ import SpinnerLoader from "@/components/SpinnerLoader";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import WorkerList from "@/components/worker/WorkerList";
-import { useReactToPrint } from "react-to-print";
 import WorkerSkeleton from "@/components/worker/WorkerSkeleton";
 import { useWorkers } from "../api/workerApi.js";
 import { useQueryClient } from "@tanstack/react-query";
-import { jsPDF } from 'jspdf';
-import { autoTable } from 'jspdf-autotable';
+
+
 
 
 export default function Workers() {
   const queryClient = useQueryClient();
   const { isLoading, data } = useWorkers()
+
   const addWorker = useMutation(api.worker.addWorker);
   const [workers, setWorkers] = useState<WorkerType[]>(data?.workers || [])
   const [isAdding, setIsAdding] = useState<boolean>(false)
   const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
   const [itemsView, setItemsView] = useState<string>("grid")
   const [editingWorker, setEditingWorker] = useState<WorkerType | null>(null);
-  const contentRef = useRef<HTMLDivElement | null>(null)
-  const pdfRef = useRef(null)
-  const reactToPrintFn = useReactToPrint({ contentRef });
-
-
   const [formData, setFormData] = useState({
     name: "",
     dailyWage: 0,
@@ -110,30 +105,6 @@ export default function Workers() {
       })
   };
 
-  const handlePrintReport = () => {
-    const doc = new jsPDF({
-      orientation: "landscape",
-
-    },);
-
-    const tableColumn = ["#", "name", "type", "dailyWage", "isPublished"];
-
-    const tableRows = workers.map((worker, index) => [index + 1, worker.name, worker.type, worker.dailyWage, worker.isPublished])
-    console.log(tableRows)
-
-    autoTable(doc, {
-      head: [tableColumn],
-      body: tableRows,//.map((worker, index) => [index + 1, worker.name, worker.type, worker.dailyWage, worker.isPublished]),
-      startY: 20,
-      styles: { fontSize: 12, font: 'cairo', textColor: "skyblue" },
-      headStyles: { fillColor: [22, 160, 133] },
-    });
-
-    doc.setLanguage("ar-EG")
-    doc.cellAddPage()
-    doc.save("workers-report.pdf");
-  }
-
   if (isLoading) return <WorkerSkeleton />
 
 
@@ -141,118 +112,112 @@ export default function Workers() {
     <div className="p-4 lg:p-6 space-y-6" dir="rtl">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <h1 className="text-2xl lg:text-3xl font-bold">العاملين</h1>
-        <div className="flex items-center gap-2">
-          <Button
-            onClick={handlePrintReport}
-            variant="outline">طباعة تقرير العمال</Button>
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen} >
+          <DialogTrigger asChild>
+            <Button onClick={resetForm}>
+              <Plus className="mr-2 h-4 w-4" />
+              إضافة عامل
+            </Button>
+          </DialogTrigger>
+          {isAdding ?
+            <DialogContent className="flex flex-col items-center justify-center">
+              <SpinnerLoader className="h-fit" parentClassName="h-fit w-fit" />
+              <h1>جاري الاضافة</h1>
 
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen} >
-            <DialogTrigger asChild>
-              <Button onClick={resetForm}>
-                <Plus className="mr-2 h-4 w-4" />
-                إضافة عامل
-              </Button>
-            </DialogTrigger>
-            {isAdding ?
-              <DialogContent className="flex flex-col items-center justify-center">
-                <SpinnerLoader className="h-fit" parentClassName="h-fit w-fit" />
-                <h1>جاري الاضافة</h1>
+            </DialogContent>
+            :
+            <DialogContent className="max-w-md max-h-screen overflow-y-scroll" dir="rtl">
+              <DialogHeader>
+                <div className="flex items-start justify-center flex-col gap-2 p-4">
+                  <DialogTitle className="text-2xl">
+                    {editingWorker ? "تعديل العامل" : "إضافة عامل جديد"}
+                  </DialogTitle>
+                  <DialogDescription className="text-md">
+                    العلامة  <ReqiureInputSgin />  هي مطلوبة
 
-              </DialogContent>
-              :
-              <DialogContent className="max-w-md max-h-screen overflow-y-scroll" dir="rtl">
-                <DialogHeader>
-                  <div className="flex items-start justify-center flex-col gap-2 p-4">
-                    <DialogTitle className="text-2xl">
-                      {editingWorker ? "تعديل العامل" : "إضافة عامل جديد"}
-                    </DialogTitle>
-                    <DialogDescription className="text-md">
-                      العلامة  <ReqiureInputSgin />  هي مطلوبة
+                  </DialogDescription>
+                </div>
+              </DialogHeader>
 
-                    </DialogDescription>
-                  </div>
-                </DialogHeader>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="name">الاسم <ReqiureInputSgin /></Label>
+                  <Input
+                    id="name"
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    placeholder="اسم العامل"
 
-                <form onSubmit={handleSubmit} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="name">الاسم <ReqiureInputSgin /></Label>
-                    <Input
-                      id="name"
-                      value={formData.name}
-                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      placeholder="اسم العامل"
+                  />
+                </div>
 
-                    />
-                  </div>
+                <div className="space-y-2">
+                  <Label htmlFor="dailyWage">الأجر اليومي ( ريال ) <ReqiureInputSgin /></Label>
+                  <Input
+                    id="dailyWage"
+                    type="number"
+                    step="5"
+                    value={formData.dailyWage}
+                    onChange={(e) => setFormData({ ...formData, dailyWage: Number(e.target.value) })}
+                    placeholder="الأجر اليومي مثل 150"
+                    required
+                  />
+                </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="dailyWage">الأجر اليومي ( ريال ) <ReqiureInputSgin /></Label>
-                    <Input
-                      id="dailyWage"
-                      type="number"
-                      step="5"
-                      value={formData.dailyWage}
-                      onChange={(e) => setFormData({ ...formData, dailyWage: Number(e.target.value) })}
-                      placeholder="الأجر اليومي مثل 150"
-                      required
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="type">النوع  <ReqiureInputSgin /></Label>
-                    <Select dir='rtl' value={formData.type} onValueChange={(value: "عامل" | "صنايعي") => setFormData({ ...formData, type: value })}>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="عامل">عامل</SelectItem>
-                        <SelectItem value="صنايعي">صنايعي</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
+                <div className="space-y-2">
+                  <Label htmlFor="type">النوع  <ReqiureInputSgin /></Label>
+                  <Select dir='rtl' value={formData.type} onValueChange={(value: "عامل" | "صنايعي") => setFormData({ ...formData, type: value })}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="عامل">عامل</SelectItem>
+                      <SelectItem value="صنايعي">صنايعي</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
 
 
-                  <div className="space-y-2">
-                    <Label htmlFor="phone">رقم الهاتف (اختياري)</Label>
-                    <Input
-                      id="phone"
-                      type="tel"
-                      value={formData.phone}
-                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                      placeholder="+966501234567"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="note">ملاحظه عن هذا العامل (اختياري)</Label>
-                    <Textarea
-                      id="note"
-                      value={formData.note}
-                      onChange={(e) => setFormData({ ...formData, note: e.target.value })}
-                      placeholder="ملاحظه عن حساب قدم مثلا او شئ اخر"
-                    />
-                  </div>
-                  <div className="flex items-center space-x-2 space-x-reverse">
-                    <Switch
-                      dir="ltr"
-                      id="isPublished"
-                      checked={formData.isPublished}
-                      onCheckedChange={(checked) => setFormData({ ...formData, isPublished: checked })}
-                    />
-                    <Label htmlFor="isPublished">السماح بالوصول لصفحة الملخص</Label>
-                  </div>
+                <div className="space-y-2">
+                  <Label htmlFor="phone">رقم الهاتف (اختياري)</Label>
+                  <Input
+                    id="phone"
+                    type="tel"
+                    value={formData.phone}
+                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                    placeholder="+966501234567"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="note">ملاحظه عن هذا العامل (اختياري)</Label>
+                  <Textarea
+                    id="note"
+                    value={formData.note}
+                    onChange={(e) => setFormData({ ...formData, note: e.target.value })}
+                    placeholder="ملاحظه عن حساب قدم مثلا او شئ اخر"
+                  />
+                </div>
+                <div className="flex items-center space-x-2 space-x-reverse">
+                  <Switch
+                    dir="ltr"
+                    id="isPublished"
+                    checked={formData.isPublished}
+                    onCheckedChange={(checked) => setFormData({ ...formData, isPublished: checked })}
+                  />
+                  <Label htmlFor="isPublished">السماح بالوصول لصفحة الملخص</Label>
+                </div>
 
-                  <div className="flex gap-2 pt-4">
-                    <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)} className="flex-1">
-                      إلغاء
-                    </Button>
-                    <Button type="submit" className="flex-1">
-                      {editingWorker ? "تحديث" : "إضافة"} العامل
-                    </Button>
-                  </div>
-                </form>
-              </DialogContent>}
-          </Dialog>
-        </div>
+                <div className="flex gap-2 pt-4">
+                  <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)} className="flex-1">
+                    إلغاء
+                  </Button>
+                  <Button type="submit" className="flex-1">
+                    {editingWorker ? "تحديث" : "إضافة"} العامل
+                  </Button>
+                </div>
+              </form>
+            </DialogContent>}
+        </Dialog>
       </div>
       <div className="flex items-center justify-start gap-4 my-4">
         <p>اختر طريقة عرض البيانات: </p>
@@ -267,7 +232,7 @@ export default function Workers() {
       {workers.length !== 0 &&
 
         itemsView == "grid" ?
-        <div ref={pdfRef} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {workers.map((worker) => (
             <WorkerCard
               key={worker._id}
